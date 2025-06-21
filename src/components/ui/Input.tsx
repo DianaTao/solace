@@ -26,7 +26,7 @@ const Input = forwardRef<HTMLInputElement, InputProps>(
     
     const errorStyles = error ? 'border-red-300 focus:border-red-500 focus:ring-red-500' : '';
     
-    const inputWithIcons = leftIcon || rightIcon;
+
 
     return (
       <div className={cn('relative', fullWidth && 'w-full')}>

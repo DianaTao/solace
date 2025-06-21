@@ -79,7 +79,7 @@ export default function VoiceRecorder({ client, onTranscriptionComplete }: Voice
       setIsRecording(true);
       setIsPaused(false);
       
-      const session = initializeSession();
+      initializeSession();
       
       // Start timer
       timerRef.current = setInterval(() => {
