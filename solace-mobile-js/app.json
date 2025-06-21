@@ -1,0 +1,24 @@
+{
+  "expo": {
+    "name": "SOLACE Mobile",
+    "slug": "solace-mobile",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "splash": {
+      "resizeMode": "contain",
+      "backgroundColor": "#eff6ff"
+    },
+    "assetBundlePatterns": [
+      "**/*"
+    ],
+    "ios": {
+      "supportsTablet": true
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#eff6ff"
+      }
+    }
+  }
+} 
