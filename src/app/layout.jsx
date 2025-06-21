@@ -1,4 +1,3 @@
-import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import { Toaster } from 'react-hot-toast';
 import "./globals.css";
@@ -23,7 +22,7 @@ export const viewport = {
   ],
 };
 
-export const metadata: Metadata = {
+export const metadata = {
   title: "SOLACE - Social Work Operations Assistant",
   description: "Social Work Operations and Link-up Assistant for Collaborative Excellence. Empowering social workers in the San Francisco Bay Area with AI-powered tools for case management, documentation, and collaboration.",
   keywords: "social work, case management, AI assistant, documentation, collaboration, San Francisco Bay Area",
@@ -47,11 +46,7 @@ export const metadata: Metadata = {
   },
 };
 
-export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
-}>) {
+export default function RootLayout({ children }) {
   return (
     <html lang="en">
       <body
