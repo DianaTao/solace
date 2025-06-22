@@ -27,7 +27,7 @@ import uvicorn
 
 # Import our modules
 from config.database import get_supabase, test_database_connection
-from routers import clients, case_notes, tasks, reports, google_calendar
+from routers import clients, case_notes, tasks, reports, google_calendar, classify
 from middleware.auth import get_current_user
 
 # Log startup information
@@ -141,6 +141,13 @@ app.include_router(
     google_calendar.router,
     prefix="/api/google-calendar",
     tags=["google_calendar"],
+    dependencies=[Depends(get_current_user)]
+)
+
+app.include_router(
+    classify.router,
+    prefix="/api/classify",
+    tags=["classification"],
     dependencies=[Depends(get_current_user)]
 )
 
