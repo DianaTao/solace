@@ -77,7 +77,13 @@ export default function WelcomeScreen({ onContinue }) {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 flex items-center justify-center p-4">
+    <div className="min-h-screen flex items-center justify-center p-4">
+      <div className="animated-bg">
+        <div className="blob blob1"></div>
+        <div className="blob blob2"></div>
+        <div className="blob blob3"></div>
+        <div className="blob blob4"></div>
+      </div>
       <div className="max-w-4xl w-full relative">
         
         {/* Skip Button */}
