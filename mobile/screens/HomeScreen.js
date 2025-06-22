@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { AuthService } from '../lib/auth';
 import apiService from '../lib/api';
 import ClientManagementScreen from './ClientManagementScreen';
+import ReportsScreen from './ReportsScreen';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -344,7 +345,13 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
             <Ionicons name="checkmark-circle" size={20} color="#6b7280" />
             <Text style={styles.menuItemText}>Tasks</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              handleNavigateToReports();
+            }}
+          >
             <Ionicons name="bar-chart" size={20} color="#6b7280" />
             <Text style={styles.menuItemText}>Reports</Text>
           </TouchableOpacity>
@@ -392,6 +399,15 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
   const handleNavigateHome = () => {
     console.log('🏠 Navigating back to Home');
     setCurrentScreen('home');
+
+  const handleNavigateToReports = () => {
+    console.log('📊 Navigating to Reports');
+    setCurrentScreen('reports');
+  };  };
+
+  const handleNavigateToReports = () => {
+    console.log('📊 Navigating to Reports');
+    setCurrentScreen('reports');
   };
 
   // If we're on the client management screen, render that instead
@@ -400,6 +416,24 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
       <ClientManagementScreen 
         user={user} 
         onBack={handleNavigateHome}
+      />
+    );
+  }
+
+  // If we're on the reports screen, render that instead
+  if (currentScreen === 'reports') {
+    return (
+      <ReportsScreen 
+        navigation={{ 
+          goBack: handleNavigateHome,
+          navigate: (screenName, params) => {
+            if (screenName === 'ReportViewer') {
+              // For now, just log - you might want to handle this differently
+              console.log('📄 Navigate to ReportViewer with params:', params);
+              Alert.alert('Report Generated', 'Report viewing functionality will be available soon!');
+            }
+          }
+        }}
       />
     );
   }

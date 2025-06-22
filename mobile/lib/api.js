@@ -272,7 +272,7 @@ class APIService {
   // ===== REPORTS =====
 
   /**
-   * Get reports
+   * Get reports service info and available reports
    */
   async getReports(params = {}) {
     const queryParams = new URLSearchParams();
@@ -287,7 +287,40 @@ class APIService {
   }
 
   /**
-   * Generate report
+   * Generate monthly case summary report using AI
+   */
+  async generateMonthlyCaseSummary(month, year) {
+    const queryParams = new URLSearchParams();
+    queryParams.append('month', month);
+    queryParams.append('year', year);
+
+    return await this.makeRequest(`/api/reports/monthly-summary?${queryParams.toString()}`, {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Generate quarterly outcome report using AI
+   */
+  async generateQuarterlyOutcomeReport(quarter, year) {
+    const queryParams = new URLSearchParams();
+    queryParams.append('quarter', quarter);
+    queryParams.append('year', year);
+
+    return await this.makeRequest(`/api/reports/quarterly-outcome?${queryParams.toString()}`, {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Get AI report service status
+   */
+  async getReportServiceStatus() {
+    return await this.makeRequest('/api/reports/service-status');
+  }
+
+  /**
+   * Generate report (deprecated - use specific methods)
    */
   async generateReport(reportData) {
     return await this.makeRequest('/api/reports/generate/', {
