@@ -189,6 +189,38 @@ class APIService {
     return await this.makeRequest(endpoint);
   }
 
+  /**
+   * Generate Monthly Case Summary Report
+   */
+  async generateMonthlyCaseSummary(month, year) {
+    return await this.makeRequest(`/api/reports/monthly-summary?month=${month}&year=${year}`, {
+      method: 'POST'
+    });
+  }
+
+  /**
+   * Generate Quarterly Outcome Report
+   */
+  async generateQuarterlyOutcomeReport(quarter, year) {
+    return await this.makeRequest(`/api/reports/quarterly-outcome?quarter=${quarter}&year=${year}`, {
+      method: 'POST'
+    });
+  }
+
+  /**
+   * Get Report Service Status
+   */
+  async getReportServiceStatus() {
+    return await this.makeRequest('/api/reports/service-status');
+  }
+
+  /**
+   * Get Available Reports
+   */
+  async getReports() {
+    return await this.makeRequest('/api/reports/');
+  }
+
   // ===== DASHBOARD =====
 
   /**

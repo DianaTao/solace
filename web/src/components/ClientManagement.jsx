@@ -13,7 +13,8 @@ import {
   MapPin,
   Tag,
   FileText,
-  CheckCircle
+  CheckCircle,
+  ArrowLeft
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Input } from './ui/Input';
@@ -24,7 +25,7 @@ import apiService from '../lib/api';
 import { AddClientForm, EditClientForm } from './ClientForms';
 import ClientProfile from './ClientProfile';
 
-export default function ClientManagement({ user }) {
+export default function ClientManagement({ user, onBack }) {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [searchQuery, setSearchQuery] = useState('');
@@ -202,149 +203,164 @@ export default function ClientManagement({ user }) {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="flex min-h-screen w-full flex-col bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
-            <Users className="h-6 w-6 text-emerald-600" />
+      <div className="sticky top-0 z-10 flex h-16 items-center gap-4 border-b border-white/20 bg-white/80 backdrop-blur-sm px-6 shadow-lg">
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={onBack}
+          className="h-10 w-10 bg-white/70 border-white/30 hover:bg-white/90"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+        <div className="flex items-center gap-2">
+          <Users className="h-6 w-6 text-emerald-600" />
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-emerald-600 to-teal-600 bg-clip-text text-transparent">
             Client Management
           </h1>
-          <p className="text-gray-600 mt-1">
+        </div>
+        <div className="ml-auto">
+          <Button
+            onClick={() => setShowAddModal(true)}
+            className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
+          >
+            <UserPlus className="h-4 w-4" />
+            Add Client
+          </Button>
+        </div>
+      </div>
+
+      <div className="flex-1 space-y-6 p-6">
+        <div>
+          <p className="text-gray-600">
             Manage client records and case information
           </p>
         </div>
-        <Button
-          onClick={() => setShowAddModal(true)}
-          className="bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2 rounded-lg flex items-center gap-2"
-        >
-          <UserPlus className="h-4 w-4" />
-          Add New Client
-        </Button>
-      </div>
 
-      {/* Search */}
-      <Card className="bg-white/80 backdrop-blur-sm border-white/20">
-        <CardContent className="p-4">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-            <Input
-              placeholder="Search clients by name, case number, or type..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10"
-            />
-          </div>
-          
-          <div className="mt-4 pt-4 border-t border-gray-200">
-            <span className="text-sm text-gray-600">
-              {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} found
-            </span>
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Clients List */}
-      {filteredClients.length === 0 ? (
-        <Card className="bg-white/80 backdrop-blur-sm border-white/20">
-          <CardContent className="p-8 text-center">
-            <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
-            <h3 className="text-lg font-medium text-gray-900 mb-2">No clients found</h3>
-            <p className="text-gray-600 mb-4">
-              {searchQuery ? 'Try adjusting your search' : 'Get started by adding your first client'}
-            </p>
-            <Button
-              onClick={() => setShowAddModal(true)}
-              className="bg-emerald-600 hover:bg-emerald-700 text-white"
-            >
-              <UserPlus className="h-4 w-4 mr-2" />
-              Add First Client
-            </Button>
+        {/* Search */}
+        <Card className="bg-white/80 backdrop-blur-sm border-white/30">
+          <CardContent className="p-4">
+            <div className="relative">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <Input
+                placeholder="Search clients by name, case number, or type..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            
+            <div className="mt-4 pt-4 border-t border-gray-200">
+              <span className="text-sm text-gray-600">
+                {filteredClients.length} client{filteredClients.length !== 1 ? 's' : ''} found
+              </span>
+            </div>
           </CardContent>
         </Card>
-      ) : (
-        <div className="space-y-3">
-          {filteredClients.map((client) => (
-            <Card key={client.id} className="bg-white/80 backdrop-blur-sm border-white/20 hover:shadow-md transition-all duration-300">
-              <CardContent className="p-4">
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <Avatar className="h-12 w-12">
-                      <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
-                        {client.name.split(' ').map(n => n[0]).join('').toUpperCase()}
-                      </AvatarFallback>
-                    </Avatar>
-                    
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-3 mb-1">
-                        <h3 className="font-semibold text-gray-900 truncate">{client.name}</h3>
-                        <span className="text-sm text-gray-500">{client.case_number}</span>
-                        <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(client.status)}`}>
-                          {client.status}
-                        </span>
-                        <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(client.priority)}`}>
-                          {client.priority}
-                        </span>
-                      </div>
+
+        {/* Clients List */}
+        {filteredClients.length === 0 ? (
+          <Card className="bg-white/80 backdrop-blur-sm border-white/30">
+            <CardContent className="p-8 text-center">
+              <Users className="h-12 w-12 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-lg font-medium text-gray-900 mb-2">No clients found</h3>
+              <p className="text-gray-600 mb-4">
+                {searchQuery ? 'Try adjusting your search' : 'Get started by adding your first client'}
+              </p>
+              <Button
+                onClick={() => setShowAddModal(true)}
+                className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              >
+                <UserPlus className="h-4 w-4 mr-2" />
+                Add First Client
+              </Button>
+            </CardContent>
+          </Card>
+        ) : (
+          <div className="space-y-3">
+            {filteredClients.map((client) => (
+              <Card key={client.id} className="bg-white/80 backdrop-blur-sm border-white/30 hover:shadow-md transition-all duration-300">
+                <CardContent className="p-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-4 flex-1">
+                      <Avatar className="h-12 w-12">
+                        <AvatarFallback className="bg-gradient-to-br from-emerald-500 to-teal-500 text-white">
+                          {client.name.split(' ').map(n => n[0]).join('').toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
                       
-                      <div className="flex items-center gap-6 text-sm text-gray-600">
-                        <div className="flex items-center gap-1">
-                          <Tag className="h-4 w-4" />
-                          <span>{client.case_type}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Phone className="h-4 w-4" />
-                          <span>{client.phone}</span>
-                        </div>
-                        <div className="flex items-center gap-1">
-                          <Calendar className="h-4 w-4" />
-                          <span>Last: {formatDate(client.last_contact)}</span>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <span className="flex items-center gap-1">
-                            <FileText className="h-3 w-3" />
-                            {client.notes_count} notes
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-3 mb-1">
+                          <h3 className="font-semibold text-gray-900 truncate">{client.name}</h3>
+                          <span className="text-sm text-gray-500">{client.case_number}</span>
+                          <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getStatusColor(client.status)}`}>
+                            {client.status}
                           </span>
-                          <span className="flex items-center gap-1">
-                            <CheckCircle className="h-3 w-3" />
-                            {client.tasks_count} tasks
+                          <span className={`px-2 py-1 rounded-md text-xs font-medium border ${getPriorityColor(client.priority)}`}>
+                            {client.priority}
                           </span>
+                        </div>
+                        
+                        <div className="flex items-center gap-6 text-sm text-gray-600">
+                          <div className="flex items-center gap-1">
+                            <Tag className="h-4 w-4" />
+                            <span>{client.case_type}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Phone className="h-4 w-4" />
+                            <span>{client.phone}</span>
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-4 w-4" />
+                            <span>Last: {formatDate(client.last_contact)}</span>
+                          </div>
+                          <div className="flex items-center gap-4">
+                            <span className="flex items-center gap-1">
+                              <FileText className="h-3 w-3" />
+                              {client.notes_count} notes
+                            </span>
+                            <span className="flex items-center gap-1">
+                              <CheckCircle className="h-3 w-3" />
+                              {client.tasks_count} tasks
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
+                    
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => handleViewClient(client)}
+                    >
+                      <Eye className="h-4 w-4 mr-1" />
+                      View
+                    </Button>
                   </div>
-                  
-                  <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => handleViewClient(client)}
-                  >
-                    <Eye className="h-4 w-4 mr-1" />
-                    View
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
-      )}
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        )}
 
-      {/* Add Client Modal */}
-      {showAddModal && (
-        <AddClientForm
-          onClose={() => setShowAddModal(false)}
-          onSuccess={handleAddClient}
-        />
-      )}
+        {/* Add Client Modal */}
+        {showAddModal && (
+          <AddClientForm
+            onClose={() => setShowAddModal(false)}
+            onSuccess={handleAddClient}
+          />
+        )}
 
-      {/* Edit Client Modal */}
-      {selectedClient && (
-        <EditClientForm
-          client={selectedClient}
-          onClose={() => setSelectedClient(null)}
-          onSuccess={handleUpdateClient}
-        />
-      )}
+        {/* Edit Client Modal */}
+        {selectedClient && (
+          <EditClientForm
+            client={selectedClient}
+            onClose={() => setSelectedClient(null)}
+            onSuccess={handleUpdateClient}
+          />
+        )}
+      </div>
     </div>
   );
 }

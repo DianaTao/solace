@@ -106,8 +106,19 @@ export default function HomePage() {
     }
   };
 
-  const handleLogin = async (e) => {
-    e.preventDefault();
+  const handleLogin = async (userOrEvent) => {
+    // If this is called with a user object directly (from LoginPage component)
+    if (userOrEvent && userOrEvent.email && !userOrEvent.preventDefault) {
+      console.log('✅ Login successful via LoginPage component:', userOrEvent.email);
+      setUser(userOrEvent);
+      return;
+    }
+
+    // If this is called with an event object (old form-based flow)
+    if (userOrEvent && userOrEvent.preventDefault) {
+      userOrEvent.preventDefault();
+    }
+    
     console.log('🔐 Login attempt:', { email, password: password ? '***hidden***' : 'empty' });
     
     // Demo credentials fallback

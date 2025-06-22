@@ -29,6 +29,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import ClientManagement from './ClientManagement';
+import ReportsScreen from './ReportsScreen';
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
@@ -103,12 +104,34 @@ export default function HomeScreen({ user, onLogout }) {
     setCurrentPage(page);
   };
 
+  const handleCreateCustomReport = () => {
+    if (confirm('Create Custom Report\n\nChoose the type of report you want to generate:\n\nClick OK for Monthly Report or Cancel to choose Quarterly Report')) {
+      // Navigate to reports page and trigger monthly report generation
+      setCurrentPage('reports');
+      // We'll pass a parameter to indicate we want to auto-generate a monthly report
+      // This will be handled by the ReportsScreen component
+    } else {
+      // Ask about quarterly report
+      if (confirm('Would you like to generate a Quarterly Report instead?')) {
+        // Navigate to reports page and trigger quarterly report generation
+        setCurrentPage('reports');
+        // We'll pass a parameter to indicate we want to auto-generate a quarterly report
+        // This will be handled by the ReportsScreen component
+      }
+    }
+  };
+
   const userName = user?.name || 'Sarah';
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase() || 'SW';
 
   // If we're on the client management page, render that component
   if (currentPage === 'clients') {
     return <ClientManagement user={user} onBack={() => setCurrentPage('dashboard')} />;
+  }
+
+  // If we're on the reports page, render that component
+  if (currentPage === 'reports') {
+    return <ReportsScreen user={user} onBack={() => setCurrentPage('dashboard')} />;
   }
 
   return (
@@ -177,6 +200,8 @@ export default function HomeScreen({ user, onLogout }) {
                       handleNavigateTo('clients');
                     } else if (item.page === 'dashboard') {
                       handleNavigateTo('dashboard');
+                    } else if (item.page === 'reports') {
+                      handleNavigateTo('reports');
                     } else {
                       handleComingSoon(item.label);
                     }
@@ -547,7 +572,7 @@ export default function HomeScreen({ user, onLogout }) {
                 </div>
                 <Button 
                   className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 text-xs md:text-sm px-3 py-1 md:px-4 md:py-2 hover:scale-105"
-                  onClick={() => handleComingSoon('Reports')}
+                  onClick={() => handleNavigateTo('reports')}
                 >
                   View All
                 </Button>
@@ -588,7 +613,7 @@ export default function HomeScreen({ user, onLogout }) {
                       variant="ghost"
                       size="sm"
                       className="hover:bg-purple-50 hover:text-purple-700 transition-all duration-300 text-xs px-2 py-1 hover:scale-105"
-                      onClick={() => handleComingSoon('Generate Report')}
+                      onClick={() => handleNavigateTo('reports')}
                     >
                       Generate
                     </Button>
@@ -599,7 +624,7 @@ export default function HomeScreen({ user, onLogout }) {
                 <Button
                   variant="outline"
                   className="w-full border-purple-200 hover:bg-purple-50 hover:text-purple-700 hover:border-purple-300 transition-all duration-300 text-sm hover:scale-105 hover:shadow-md"
-                  onClick={() => handleComingSoon('Custom Report')}
+                  onClick={handleCreateCustomReport}
                 >
                   <Plus className="mr-2 h-4 w-4 transition-transform duration-300 hover:rotate-90" />
                   Create Custom Report
