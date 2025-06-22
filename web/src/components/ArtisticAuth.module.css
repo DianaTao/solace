@@ -1,0 +1,747 @@
+/* Artistic Authentication Pages Styles */
+
+.container {
+  min-height: 100vh;
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(135deg, #dbeafe 0%, #e0e7ff 50%, #faf5ff 100%);
+}
+
+.containerSignup {
+  background: linear-gradient(135deg, #ecfdf5 0%, #f0fdfa 50%, #ecfeff 100%);
+}
+
+/* Artistic Background Elements */
+.backgroundElements {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+
+/* Login Page Background Blobs */
+.backgroundBlob1 {
+  position: absolute;
+  top: -10rem;
+  right: -10rem;
+  width: 20rem;
+  height: 20rem;
+  background: linear-gradient(135deg, rgba(59, 130, 246, 0.2) 0%, rgba(168, 85, 247, 0.2) 100%);
+  border-radius: 50%;
+  filter: blur(3rem);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.backgroundBlob2 {
+  position: absolute;
+  bottom: -10rem;
+  left: -10rem;
+  width: 24rem;
+  height: 24rem;
+  background: linear-gradient(45deg, rgba(34, 197, 94, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+  border-radius: 50%;
+  filter: blur(3rem);
+  animation: pulse 3s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.backgroundBlob3 {
+  position: absolute;
+  top: 50%;
+  left: 25%;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(135deg, rgba(251, 191, 36, 0.1) 0%, rgba(249, 115, 22, 0.1) 100%);
+  border-radius: 50%;
+  filter: blur(2rem);
+  animation: bounce 3s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+/* Signup Page Background Blobs */
+.backgroundBlob1Signup {
+  position: absolute;
+  top: -10rem;
+  left: -10rem;
+  width: 20rem;
+  height: 20rem;
+  background: linear-gradient(135deg, rgba(52, 211, 153, 0.2) 0%, rgba(20, 184, 166, 0.2) 100%);
+  border-radius: 50%;
+  filter: blur(3rem);
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.backgroundBlob2Signup {
+  position: absolute;
+  bottom: -10rem;
+  right: -10rem;
+  width: 24rem;
+  height: 24rem;
+  background: linear-gradient(45deg, rgba(6, 182, 212, 0.2) 0%, rgba(59, 130, 246, 0.2) 100%);
+  border-radius: 50%;
+  filter: blur(3rem);
+  animation: pulse 3s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.backgroundBlob3Signup {
+  position: absolute;
+  top: 33.333333%;
+  right: 25%;
+  width: 8rem;
+  height: 8rem;
+  background: linear-gradient(135deg, rgba(168, 85, 247, 0.1) 0%, rgba(236, 72, 153, 0.1) 100%);
+  border-radius: 50%;
+  filter: blur(2rem);
+  animation: bounce 3s ease-in-out infinite;
+  animation-delay: 0.5s;
+}
+
+/* Floating Icons */
+.floatingIcon1 {
+  position: absolute;
+  top: 5rem;
+  left: 5rem;
+  animation: float 6s ease-in-out infinite;
+}
+
+.floatingIcon1.login {
+  color: rgba(59, 130, 246, 0.3);
+}
+
+.floatingIcon1.signup {
+  color: rgba(52, 211, 153, 0.3);
+}
+
+.floatingIcon2 {
+  position: absolute;
+  top: 10rem;
+  right: 8rem;
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 1s;
+}
+
+.floatingIcon2.login {
+  color: rgba(168, 85, 247, 0.3);
+}
+
+.floatingIcon2.signup {
+  color: rgba(20, 184, 166, 0.3);
+}
+
+.floatingIcon3 {
+  position: absolute;
+  bottom: 8rem;
+  left: 8rem;
+  animation: float 6s ease-in-out infinite;
+  animation-delay: 2s;
+}
+
+.floatingIcon3.login {
+  color: rgba(34, 197, 94, 0.3);
+}
+
+.floatingIcon3.signup {
+  color: rgba(6, 182, 212, 0.3);
+}
+
+/* Main Layout */
+.mainLayout {
+  position: relative;
+  z-index: 10;
+  min-height: 100vh;
+  display: flex;
+}
+
+/* Hero Section */
+.heroSection {
+  display: none;
+  width: 50%;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  text-align: center;
+}
+
+@media (min-width: 1024px) {
+  .heroSection {
+    display: flex;
+  }
+}
+
+.heroContent {
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+.heroLogoContainer {
+  position: relative;
+}
+
+.heroLogoGlow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(2rem);
+  opacity: 0.2;
+  animation: pulse 3s ease-in-out infinite;
+}
+
+.heroLogoGlow.login {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+}
+
+.heroLogoGlow.signup {
+  background: linear-gradient(to right, #059669, #0d9488);
+}
+
+.heroLogoBg {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  padding: 2rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.heroLogoIcon {
+  height: 4rem;
+  width: 4rem;
+  margin: 0 auto;
+}
+
+.heroLogoIcon.login {
+  color: #2563eb;
+}
+
+.heroLogoIcon.signup {
+  color: #059669;
+}
+
+.heroTextContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.heroTitle {
+  font-size: 2.25rem;
+  font-weight: 700;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.heroTitle.login {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+}
+
+.heroTitle.signup {
+  background: linear-gradient(to right, #059669, #0d9488);
+}
+
+.heroDescription {
+  font-size: 1.125rem;
+  color: #4b5563;
+  line-height: 1.75;
+}
+
+.heroStats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+  padding-top: 2rem;
+}
+
+.heroStatCard {
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  padding: 1rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.heroStatValue {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.heroStatValue.login {
+  color: #2563eb;
+}
+
+.heroStatValue.signup {
+  color: #059669;
+}
+
+.heroStatValue.purple {
+  color: #9333ea;
+}
+
+.heroStatValue.teal {
+  color: #0d9488;
+}
+
+.heroStatLabel {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.heroFeatureCard {
+  background-color: rgba(255, 255, 255, 0.6);
+  backdrop-filter: blur(8px);
+  border-radius: 1rem;
+  padding: 1.5rem;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  text-align: left;
+}
+
+.heroFeatureHeader {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.heroFeatureDot {
+  width: 0.5rem;
+  height: 0.5rem;
+  border-radius: 50%;
+}
+
+.heroFeatureDot.emerald {
+  background-color: #10b981;
+}
+
+.heroFeatureDot.teal {
+  background-color: #0d9488;
+}
+
+.heroFeatureTitle {
+  font-weight: 600;
+  color: #374151;
+}
+
+.heroFeatureDescription {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+/* Form Section */
+.formSection {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .formSection {
+    width: 50%;
+  }
+}
+
+.formContainer {
+  width: 100%;
+  max-width: 28rem;
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+}
+
+/* Mobile Logo */
+.mobileLogoContainer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1rem;
+}
+
+@media (min-width: 1024px) {
+  .mobileLogoContainer {
+    display: none;
+  }
+}
+
+.mobileLogoIconContainer {
+  position: relative;
+}
+
+.mobileLogoGlow {
+  position: absolute;
+  inset: 0;
+  border-radius: 50%;
+  filter: blur(1.5rem);
+  opacity: 0.3;
+}
+
+.mobileLogoGlow.login {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+}
+
+.mobileLogoGlow.signup {
+  background: linear-gradient(to right, #059669, #0d9488);
+}
+
+.mobileLogoBg {
+  position: relative;
+  background-color: rgba(255, 255, 255, 0.9);
+  backdrop-filter: blur(8px);
+  border-radius: 50%;
+  padding: 1rem;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.mobileLogoIcon {
+  height: 2rem;
+  width: 2rem;
+}
+
+.mobileLogoIcon.login {
+  color: #2563eb;
+}
+
+.mobileLogoIcon.signup {
+  color: #059669;
+}
+
+.mobileLogoText {
+  font-size: 1.5rem;
+  font-weight: 700;
+  background-clip: text;
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+.mobileLogoText.login {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+}
+
+.mobileLogoText.signup {
+  background: linear-gradient(to right, #059669, #0d9488);
+}
+
+/* Form Card */
+.formCard {
+  background-color: rgba(255, 255, 255, 0.8);
+  backdrop-filter: blur(8px);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  border: none;
+  overflow: hidden;
+  position: relative;
+}
+
+.formCardTopBorder {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+}
+
+.formCardTopBorder.login {
+  background: linear-gradient(to right, #3b82f6, #9333ea, #ec4899);
+}
+
+.formCardTopBorder.signup {
+  background: linear-gradient(to right, #10b981, #0d9488, #06b6d4);
+}
+
+.formHeader {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  padding-bottom: 2rem;
+}
+
+.formHeaderSignup {
+  padding-bottom: 1.5rem;
+}
+
+.formTitle {
+  font-size: 1.5rem;
+  text-align: center;
+  font-weight: 700;
+  color: #1f2937;
+}
+
+.formDescription {
+  text-align: center;
+  color: #4b5563;
+}
+
+.formContent {
+  display: flex;
+  flex-direction: column;
+  gap: 1.5rem;
+}
+
+.formContentSignup {
+  gap: 1rem;
+}
+
+.formRow {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 1rem;
+}
+
+.formGroup {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.formLabel {
+  color: #374151;
+  font-weight: 500;
+}
+
+.formInput {
+  background-color: rgba(255, 255, 255, 0.7);
+  border: 1px solid #d1d5db;
+  transition: all 0.2s;
+}
+
+.formInput.login:focus {
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
+}
+
+.formInput.signup:focus {
+  border-color: #10b981;
+  box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.2);
+}
+
+.passwordContainer {
+  position: relative;
+}
+
+.passwordToggle {
+  position: absolute;
+  right: 0;
+  top: 0;
+  height: 100%;
+  padding: 0 0.75rem;
+  transition: background-color 0.2s;
+}
+
+.passwordToggle:hover {
+  background-color: transparent;
+}
+
+.passwordIcon {
+  height: 1rem;
+  width: 1rem;
+  color: #9ca3af;
+}
+
+.rememberRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.rememberGroup {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.rememberCheckbox {
+  border-radius: 0.25rem;
+  border: 1px solid #d1d5db;
+  color: #2563eb;
+}
+
+.rememberCheckbox:focus {
+  box-shadow: 0 0 0 2px #3b82f6;
+}
+
+.rememberLabel {
+  font-size: 0.875rem;
+  color: #4b5563;
+}
+
+.forgotLink {
+  font-size: 0.875rem;
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.forgotLink:hover {
+  color: #1d4ed8;
+}
+
+.termsGroup {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding-top: 0.5rem;
+}
+
+.termsCheckbox {
+  border-radius: 0.25rem;
+  border: 1px solid #d1d5db;
+  color: #10b981;
+  margin-top: 0.25rem;
+}
+
+.termsCheckbox:focus {
+  box-shadow: 0 0 0 2px #10b981;
+}
+
+.termsLabel {
+  font-size: 0.875rem;
+  color: #4b5563;
+  line-height: 1.5;
+}
+
+.termsLink {
+  color: #10b981;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.termsLink:hover {
+  color: #047857;
+}
+
+.formFooter {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  padding-top: 1.5rem;
+}
+
+.primaryButton {
+  width: 100%;
+  color: white;
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+  transition: all 0.2s;
+}
+
+.primaryButton:hover {
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+}
+
+.primaryButton.login {
+  background: linear-gradient(to right, #2563eb, #9333ea);
+}
+
+.primaryButton.login:hover {
+  background: linear-gradient(to right, #1d4ed8, #7c3aed);
+}
+
+.primaryButton.signup {
+  background: linear-gradient(to right, #059669, #0d9488);
+}
+
+.primaryButton.signup:hover {
+  background: linear-gradient(to right, #047857, #0f766e);
+}
+
+.separatorContainer {
+  position: relative;
+}
+
+.separatorLine {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+}
+
+.separatorText {
+  position: relative;
+  display: flex;
+  justify-content: center;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+}
+
+.separatorLabel {
+  background-color: white;
+  padding: 0 0.5rem;
+  color: #6b7280;
+}
+
+.googleButton {
+  width: 100%;
+  border: 1px solid #d1d5db;
+  transition: all 0.2s;
+}
+
+.googleButton:hover {
+  background-color: #f9fafb;
+}
+
+.googleIcon {
+  margin-right: 0.5rem;
+  height: 1rem;
+  width: 1rem;
+}
+
+.switchText {
+  text-align: center;
+  font-size: 0.875rem;
+}
+
+.switchTextLabel {
+  color: #4b5563;
+}
+
+.switchLink {
+  color: #2563eb;
+  font-weight: 500;
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.switchLink:hover {
+  color: #1d4ed8;
+}
+
+.switchLink.signup {
+  color: #10b981;
+}
+
+.switchLink.signup:hover {
+  color: #047857;
+}
+
+/* Animations */
+@keyframes pulse {
+  0%, 100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+}
+
+@keyframes bounce {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-25%);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0px);
+  }
+  50% {
+    transform: translateY(-20px);
+  }
+} 

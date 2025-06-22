@@ -1,4 +1,5 @@
 import { supabase, TABLES } from './supabase';
+import logger from './logger';
 
 export class AuthService {
   // Safe wrapper for Supabase auth operations
@@ -8,7 +9,7 @@ export class AuthService {
     } catch (error) {
       // Handle AuthSessionMissingError gracefully
       if (error.message && error.message.includes('Auth session missing')) {
-        console.log(`ℹ️ ${operationName}: No auth session (user not logged in)`);
+        logger.info(`${operationName}: No auth session (user not logged in)`, 'AUTH');
         return null;
       }
       // Re-throw other errors
@@ -18,7 +19,7 @@ export class AuthService {
   // Sign in with email and password
   static async signIn(credentials) {
     try {
-      console.log('🔐 Attempting Supabase login with:', credentials.email);
+      logger.auth(`Attempting Supabase login with: ${credentials.email}`);
       
       const { data, error } = await supabase.auth.signInWithPassword({
         email: credentials.email,
@@ -26,11 +27,11 @@ export class AuthService {
       });
 
       if (error) {
-        console.error('❌ Supabase login error:', error.message);
+        logger.error('Supabase login error', error, 'AUTH');
         throw error;
       }
 
-      console.log('✅ Supabase login successful');
+      logger.success('Supabase login successful', 'AUTH');
 
       // Get user profile data - if it fails, create a basic profile
       if (data.user) {
@@ -38,7 +39,7 @@ export class AuthService {
         
         // If no profile exists, create a basic one for the session
         if (!profile) {
-          console.log('📝 Creating basic user profile for session...');
+          logger.info('Creating basic user profile for session', 'AUTH');
           profile = {
             id: data.user.id,
             email: data.user.email,
@@ -53,7 +54,7 @@ export class AuthService {
 
       return { user: null, session: null };
     } catch (error) {
-      console.error('Sign in error:', error);
+      logger.error('Sign in error', error, 'AUTH');
       throw error;
     }
   }
@@ -61,7 +62,7 @@ export class AuthService {
   // Sign up with email and password
   static async signUp(email, password, userData) {
     try {
-      console.log('📝 Attempting Supabase signup with:', email);
+      logger.auth(`Attempting Supabase signup with: ${email}`);
       
       // Directly attempt signup - let Supabase handle duplicate email checking
       const { data, error } = await supabase.auth.signUp({
@@ -73,53 +74,54 @@ export class AuthService {
       });
 
       if (error) {
-        console.error('❌ Supabase signup error:', error.message);
+        logger.error('Supabase signup error', error, 'AUTH');
         
         // Handle specific error cases
         if (error.message.includes('already registered') || 
             error.message.includes('already exists') ||
             error.message.includes('User already registered')) {
-          console.log('👤 User already exists in auth system:', email);
+          logger.info(`User already exists in auth system: ${email}`, 'AUTH');
           throw new Error('User already registered');
         }
         
         throw error;
       }
 
-      console.log('✅ Supabase signup successful');
-      console.log('📊 Signup data:', {
+      logger.success('Supabase signup successful', 'AUTH');
+      logger.debug('Signup data', {
         userCreated: !!data.user,
         userEmail: data.user?.email,
         sessionExists: !!data.session,
         needsConfirmation: !data.session && !!data.user
-      });
+      }, 'AUTH');
 
       // Create user profile - with enhanced error handling
       if (data.user) {
         try {
-          console.log('📝 Creating user profile in database for:', email);
+          logger.database(`Creating user profile in database for: ${email}`);
           const profileData = await this.createUserProfile(data.user.id, {
             email,
             ...userData,
           });
-          console.log('✅ User profile created successfully:', profileData);
+          logger.success('User profile created successfully', 'DATABASE');
+          logger.debug('Profile data', profileData, 'DATABASE');
         } catch (profileError) {
-          console.error('❌ Failed to create user profile:', profileError);
+          logger.error('Failed to create user profile', profileError, 'DATABASE');
           
           // If it's an RLS policy error, the user was created in auth but not in our table
           if (profileError.message.includes('row-level security policy')) {
-            console.log('⚠️ User created in auth but profile creation blocked by RLS policy');
+            logger.warn('User created in auth but profile creation blocked by RLS policy', 'DATABASE');
             // We'll still return the auth data - the profile can be created later
           } else {
             // For other database errors, we might want to clean up the auth user
-            console.error('💥 Database error during profile creation:', profileError.message);
+            logger.error('Database error during profile creation', profileError, 'DATABASE');
           }
         }
       }
 
       return data;
     } catch (error) {
-      console.error('Sign up error:', error);
+      logger.error('Sign up error', error, 'AUTH');
       throw error;
     }
   }
@@ -130,7 +132,7 @@ export class AuthService {
       const { error } = await supabase.auth.signOut();
       if (error) throw error;
     } catch (error) {
-      console.error('Sign out error:', error);
+      logger.error('Sign out error', error, 'AUTH');
       throw error;
     }
   }
@@ -143,7 +145,7 @@ export class AuthService {
       // Handle AuthSessionMissingError gracefully
       if (error) {
         if (error.message.includes('Auth session missing')) {
-          console.log('ℹ️ No session found (user not logged in)');
+          logger.info('No session found (user not logged in)', 'AUTH');
           return null;
         }
         throw error;
@@ -161,7 +163,7 @@ export class AuthService {
       // Handle AuthSessionMissingError gracefully
       if (error) {
         if (error.message.includes('Auth session missing')) {
-          console.log('ℹ️ No auth session found (user not logged in)');
+          logger.info('No auth session found (user not logged in)', 'AUTH');
           return null;
         }
         throw error;
@@ -172,7 +174,7 @@ export class AuthService {
         
         // If no profile exists, create a basic one for the session
         if (!profile) {
-          console.log('📝 Creating basic user profile for current session...');
+          logger.info('Creating basic user profile for current session', 'AUTH');
           profile = {
             id: user.id,
             email: user.email,
@@ -201,7 +203,7 @@ export class AuthService {
       if (error) {
         // If no profile exists, try to get user info from auth and create profile
         if (error.code === 'PGRST116') {
-          console.log('🔄 No user profile found, attempting to create one...');
+          logger.info('No user profile found, attempting to create one', 'DATABASE');
           const { data: { user } } = await supabase.auth.getUser();
           if (user) {
             const newProfile = await this.createUserProfile(user.id, {
@@ -216,7 +218,7 @@ export class AuthService {
       }
       return data;
     } catch (error) {
-      console.error('Get user profile error:', error);
+      logger.error('Get user profile error', error, 'DATABASE');
       return null;
     }
   }
@@ -224,12 +226,12 @@ export class AuthService {
   // Create user profile in database
   static async createUserProfile(userId, userData) {
     try {
-      console.log('🔍 Attempting to insert user profile:', {
+      logger.debug('Attempting to insert user profile', {
         id: userId,
         email: userData.email,
         name: userData.name,
         role: userData.role || 'social_worker'
-      });
+      }, 'DATABASE');
 
       const profileData = {
         id: userId,
@@ -248,19 +250,21 @@ export class AuthService {
         .single();
 
       if (error) {
-        console.error('❌ Database insert error:', {
+        logger.error('Database insert error', error, 'DATABASE');
+        logger.debug('Database error details', {
           code: error.code,
           message: error.message,
           details: error.details,
           hint: error.hint
-        });
+        }, 'DATABASE');
         throw error;
       }
 
-      console.log('✅ User profile inserted successfully:', data);
+      logger.success('User profile inserted successfully', 'DATABASE');
+      logger.debug('Profile data', data, 'DATABASE');
       return data;
     } catch (error) {
-      console.error('Create user profile error:', error);
+      logger.error('Create user profile error', error, 'DATABASE');
       throw error;
     }
   }
@@ -281,7 +285,7 @@ export class AuthService {
       if (error) throw error;
       return data;
     } catch (error) {
-      console.error('Update user profile error:', error);
+      logger.error('Update user profile error', error, 'DATABASE');
       throw error;
     }
   }
@@ -295,7 +299,7 @@ export class AuthService {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Reset password error:', error);
+      logger.error('Reset password error', error, 'AUTH');
       throw error;
     }
   }
@@ -309,7 +313,7 @@ export class AuthService {
 
       if (error) throw error;
     } catch (error) {
-      console.error('Update password error:', error);
+      logger.error('Update password error', error, 'AUTH');
       throw error;
     }
   }
@@ -324,13 +328,13 @@ export class AuthService {
         .maybeSingle(); // Use maybeSingle to avoid error if no rows found
 
       if (error && error.code !== 'PGRST116') {
-        console.error('Error checking user existence:', error);
+        logger.error('Error checking user existence', error, 'DATABASE');
         return null;
       }
 
       return data; // Returns user data if exists, null if not
     } catch (error) {
-      console.error('Check user exists error:', error);
+      logger.error('Check user exists error', error, 'DATABASE');
       return null;
     }
   }
@@ -341,7 +345,7 @@ export class AuthService {
   // Manual profile creation for existing auth users without database profiles
   static async createMissingProfile(authUser) {
     try {
-      console.log('🔧 Creating missing profile for auth user:', authUser.email);
+      logger.info(`Creating missing profile for auth user: ${authUser.email}`, 'AUTH');
       
       const profileData = await this.createUserProfile(authUser.id, {
         email: authUser.email,
@@ -349,10 +353,11 @@ export class AuthService {
         role: 'social_worker'
       });
       
-      console.log('✅ Missing profile created successfully:', profileData);
+      logger.success('Missing profile created successfully', 'AUTH');
+      logger.debug('Profile data', profileData, 'AUTH');
       return profileData;
     } catch (error) {
-      console.error('❌ Failed to create missing profile:', error);
+      logger.error('Failed to create missing profile', error, 'AUTH');
       throw error;
     }
   }
@@ -360,27 +365,27 @@ export class AuthService {
   // Fix existing auth users who don't have database profiles
   static async fixMissingProfiles() {
     try {
-      console.log('🔧 Checking for auth users without database profiles...');
+      logger.info('Checking for auth users without database profiles', 'AUTH');
       
       // Get current auth user
       const { data: { user } } = await supabase.auth.getUser();
       if (!user) {
-        console.log('ℹ️ No authenticated user found');
+        logger.info('No authenticated user found', 'AUTH');
         return null;
       }
 
       // Check if profile exists
       const existingProfile = await this.getUserProfile(user.id);
       if (existingProfile) {
-        console.log('✅ User profile already exists');
+        logger.info('User profile already exists', 'AUTH');
         return existingProfile;
       }
 
       // Create missing profile
-      console.log('🔧 Creating missing profile for current user...');
+      logger.info('Creating missing profile for current user', 'AUTH');
       return await this.createMissingProfile(user);
     } catch (error) {
-      console.error('❌ Error fixing missing profiles:', error);
+      logger.error('Error fixing missing profiles', error, 'AUTH');
       return null;
     }
   }
@@ -391,16 +396,16 @@ export class AuthService {
       const { data: { user }, error } = await supabase.auth.getUser();
       
       if (error || !user) {
-        console.log('❌ No authenticated user found');
+        logger.info('No authenticated user found', 'AUTH');
         return null;
       }
 
-      console.log('🔍 Creating profile for authenticated user:', user.email);
+      logger.info(`Creating profile for authenticated user: ${user.email}`, 'AUTH');
       
       // Check if profile already exists
       const existingProfile = await this.getUserProfile(user.id);
       if (existingProfile) {
-        console.log('✅ User profile already exists');
+        logger.info('User profile already exists', 'AUTH');
         return existingProfile;
       }
 
@@ -411,10 +416,11 @@ export class AuthService {
         role: 'social_worker'
       });
 
-      console.log('✅ Profile created for existing user:', newProfile);
+      logger.success('Profile created for existing user', 'AUTH');
+      logger.debug('New profile', newProfile, 'AUTH');
       return newProfile;
     } catch (error) {
-      console.error('❌ Error creating profile for current user:', error);
+      logger.error('Error creating profile for current user', error, 'AUTH');
       throw error;
     }
   }

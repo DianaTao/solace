@@ -6,16 +6,23 @@ const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Validate environment variables
 if (!supabaseUrl || !supabaseAnonKey) {
-  console.error('❌ Missing Supabase environment variables!');
-  console.error('Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  const errorMessage = 'Missing Supabase environment variables! Required: NEXT_PUBLIC_SUPABASE_URL, NEXT_PUBLIC_SUPABASE_ANON_KEY';
+  
+  // Only log in development
+  if (process.env.NODE_ENV === 'development') {
+    console.error('❌', errorMessage); // eslint-disable-line no-console
+  }
+  
   throw new Error('Supabase configuration is missing. Please check your environment variables.');
 }
 
-// Debug logging
-console.log('🔧 Web Supabase config:', { 
-  url: supabaseUrl, 
-  keyLength: supabaseAnonKey?.length
-});
+// Debug logging (development only)
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔧 Web Supabase config:', { // eslint-disable-line no-console
+    url: supabaseUrl, 
+    keyLength: supabaseAnonKey?.length 
+  });
+}
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {
