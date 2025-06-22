@@ -18,7 +18,8 @@ import {
   Settings,
   MoreHorizontal,
   MessageSquare,
-  Activity
+  Activity,
+  Mic
 } from 'lucide-react';
 import { Button } from './ui/Button';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/Card';
@@ -27,6 +28,7 @@ import { Progress } from './ui/Progress';
 import { EditClientForm } from './ClientForms';
 import logger from '../lib/logger';
 import apiService from '../lib/api';
+import VoiceNoteRecorder from './VoiceNoteRecorder';
 
 export default function ClientProfile({ clientId, onBack }) {
   const [client, setClient] = useState(null);
@@ -36,6 +38,7 @@ export default function ClientProfile({ clientId, onBack }) {
   const [caseNotes, setCaseNotes] = useState([]);
   const [tasks, setTasks] = useState([]);
   const [reports, setReports] = useState([]);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
 
   useEffect(() => {
     if (clientId) {
@@ -404,9 +407,12 @@ export default function ClientProfile({ clientId, onBack }) {
         <div className="space-y-4">
           <div className="flex items-center justify-between">
             <h3 className="text-lg font-medium">Case Notes</h3>
-            <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-              <Plus className="h-4 w-4 mr-2" />
-              Add Note
+            <Button 
+              className="bg-emerald-600 hover:bg-emerald-700 text-white"
+              onClick={() => setShowVoiceRecorder(true)}
+            >
+              <Mic className="h-4 w-4 mr-2" />
+              Record Voice Note
             </Button>
           </div>
           
@@ -416,9 +422,12 @@ export default function ClientProfile({ clientId, onBack }) {
                 <FileText className="h-12 w-12 text-gray-400 mx-auto mb-4" />
                 <h3 className="text-lg font-medium text-gray-900 mb-2">No case notes yet</h3>
                 <p className="text-gray-600 mb-4">Start documenting this client's case progress</p>
-                <Button className="bg-emerald-600 hover:bg-emerald-700 text-white">
-                  <Plus className="h-4 w-4 mr-2" />
-                  Add First Note
+                <Button 
+                  className="bg-emerald-600 hover:bg-emerald-700 text-white"
+                  onClick={() => setShowVoiceRecorder(true)}
+                >
+                  <Mic className="h-4 w-4 mr-2" />
+                  Record First Voice Note
                 </Button>
               </CardContent>
             </Card>
@@ -515,6 +524,19 @@ export default function ClientProfile({ clientId, onBack }) {
           onSuccess={handleClientUpdate}
         />
       )}
+
+      {/* Voice Note Recorder */}
+      <VoiceNoteRecorder
+        open={showVoiceRecorder}
+        onClose={() => setShowVoiceRecorder(false)}
+        clientId={clientId}
+        onNoteCreated={(note) => {
+          logger.info('Voice note created for client', { clientId, note }, 'VoiceRecorder');
+          // Refresh case notes
+          loadClientData();
+        }}
+        title={`Record Voice Note for ${client.name}`}
+      />
     </div>
   );
 }

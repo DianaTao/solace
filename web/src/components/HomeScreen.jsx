@@ -17,6 +17,7 @@ import {
   Heart,
   Home,
   Menu,
+  Mic,
   PieChart,
   Search,
   Shield,
@@ -31,6 +32,7 @@ import Link from 'next/link';
 import ClientManagement from './ClientManagement';
 import ReportsScreen from './ReportsScreen';
 import TasksScreen from './TasksScreen';
+import VoiceNoteRecorder from './VoiceNoteRecorder';
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
@@ -75,6 +77,7 @@ export default function HomeScreen({ user, onLogout }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
   const [currentPage, setCurrentPage] = useState('dashboard');
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
 
   useEffect(() => {
     logger.info(`Enhanced Dashboard HomeScreen initialized for user: ${user?.email}`, 'UI');
@@ -561,10 +564,10 @@ export default function HomeScreen({ user, onLogout }) {
                 <Button
                   variant="outline"
                   className="w-full border-teal-200 hover:bg-teal-50 hover:text-teal-700 hover:border-teal-300 transition-all duration-300 text-sm hover:scale-105 hover:shadow-md"
-                  onClick={() => handleComingSoon('Add Case Note')}
+                  onClick={() => setShowVoiceRecorder(true)}
                 >
-                  <Plus className="mr-2 h-4 w-4 transition-transform duration-300 hover:rotate-90" />
-                  Add New Note
+                  <Mic className="mr-2 h-4 w-4 transition-transform duration-300" />
+                  Record Voice Note
                 </Button>
               </CardFooter>
             </Card>
@@ -647,6 +650,18 @@ export default function HomeScreen({ user, onLogout }) {
           </div>
         </div>
       </main>
+
+      {/* Voice Note Recorder */}
+      <VoiceNoteRecorder
+        open={showVoiceRecorder}
+        onClose={() => setShowVoiceRecorder(false)}
+        clientId={null} // For general notes, will be enhanced later for client-specific notes
+        onNoteCreated={(note) => {
+          logger.info('Voice note created successfully', note, 'VoiceRecorder');
+          // You could refresh dashboard data here if needed
+        }}
+        title="Record Case Note"
+      />
     </div>
   );
 } 

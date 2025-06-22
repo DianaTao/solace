@@ -75,11 +75,20 @@ class APIService {
         timeout: this.timeout,
         ...options,
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${token}`,
           ...options.headers,
         },
       };
+
+      // Handle FormData (don't set Content-Type for FormData, let React Native set it)
+      if (!options.isFormData) {
+        config.headers['Content-Type'] = 'application/json';
+        // Convert body to JSON string for regular requests
+        if (config.body && typeof config.body === 'object') {
+          config.body = JSON.stringify(config.body);
+        }
+      }
+      // For FormData, body stays as FormData object
       
       console.log('📋 Request config:', {
         url: `${this.baseURL}${endpoint}`,
@@ -88,7 +97,8 @@ class APIService {
           'Content-Type': config.headers['Content-Type'],
           'Authorization': `Bearer ${token?.substring(0, 20)}...${token?.slice(-10)}`,
         },
-        body_length: config.body ? JSON.stringify(config.body).length : 0
+        body_type: config.body ? config.body.constructor.name : 'none',
+        body_length: config.body && !options.isFormData ? JSON.stringify(config.body).length : 'FormData'
       });
 
       const response = await fetch(`${this.baseURL}${endpoint}`, config);
@@ -239,6 +249,71 @@ class APIService {
       method: 'POST',
       body: noteData,
     });
+  }
+
+  /**
+   * Start voice intake session
+   */
+  async startVoiceIntake(clientId, sessionType = 'intake') {
+    return await this.makeRequest('/api/case-notes/voice-intake/', {
+      method: 'POST',
+      body: {
+        client_id: clientId,
+        session_type: sessionType,
+      },
+    });
+  }
+
+  /**
+   * Upload audio for transcription and automatic note creation
+   */
+  async uploadAudioForTranscription(audioFile, clientId, sessionId = null) {
+    console.log('📁 Preparing audio file for upload:', audioFile);
+    
+    const formData = new FormData();
+    
+    // Format the audio file correctly for React Native FormData
+    // Normalize MIME type to ensure backend compatibility
+    let mimeType = audioFile.type || 'audio/m4a';
+    if (mimeType === 'audio/x-m4a') {
+      mimeType = 'audio/m4a';
+    } else if (mimeType === 'audio/x-wav') {
+      mimeType = 'audio/wav';
+    } else if (mimeType === 'audio/x-mp3') {
+      mimeType = 'audio/mp3';
+    }
+    
+    const fileObj = {
+      uri: audioFile.uri,
+      type: mimeType,
+      name: audioFile.name || `voice_note_${Date.now()}.m4a`,
+    };
+    
+    console.log('📋 File object for FormData:', fileObj);
+    formData.append('audio_file', fileObj);
+    
+    if (clientId) {
+      formData.append('client_id', clientId.toString());
+    }
+    
+    const endpoint = sessionId 
+      ? `/api/case-notes/voice-sessions/${sessionId}/upload`
+      : '/api/case-notes/transcribe-audio/';
+    
+    console.log(`🚀 Uploading to endpoint: ${endpoint}`);
+    
+    return await this.makeRequest(endpoint, {
+      method: 'POST',
+      body: formData,
+      isFormData: true,
+    });
+  }
+
+  /**
+   * Check voice service health
+   */
+  async checkVoiceServiceHealth() {
+    return await this.makeRequest('/api/case-notes/voice/health/');
   }
 
   // ===== TASKS =====
