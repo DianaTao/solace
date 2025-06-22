@@ -28,6 +28,7 @@ import {
   Clock,
 } from 'lucide-react';
 import Link from 'next/link';
+import ClientManagement from './ClientManagement';
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
@@ -71,6 +72,7 @@ function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
 export default function HomeScreen({ user, onLogout }) {
   const [isLoading, setIsLoading] = useState(false);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [currentPage, setCurrentPage] = useState('dashboard');
 
   useEffect(() => {
     logger.info(`Enhanced Dashboard HomeScreen initialized for user: ${user?.email}`, 'UI');
@@ -97,8 +99,17 @@ export default function HomeScreen({ user, onLogout }) {
     alert(`🚧 Coming Soon!\n\nThe ${feature} feature is being developed. Stay tuned for updates!`);
   };
 
+  const handleNavigateTo = (page) => {
+    setCurrentPage(page);
+  };
+
   const userName = user?.name || 'Sarah';
   const userInitials = userName.split(' ').map(n => n[0]).join('').toUpperCase() || 'SW';
+
+  // If we're on the client management page, render that component
+  if (currentPage === 'clients') {
+    return <ClientManagement user={user} onBack={() => setCurrentPage('dashboard')} />;
+  }
 
   return (
     <div className="flex min-h-screen w-full flex-col relative overflow-hidden bg-gradient-to-br from-emerald-50 via-teal-50 to-cyan-50">
@@ -153,18 +164,25 @@ export default function HomeScreen({ user, onLogout }) {
             </div>
             <nav className="grid gap-2 text-base font-medium">
               {[
-                { icon: Home, label: "Dashboard", active: true },
-                { icon: Users, label: "Clients" },
-                { icon: FileText, label: "Case Notes" },
-                { icon: CheckSquare, label: "Tasks" },
-                { icon: PieChart, label: "Reports" },
+                { icon: Home, label: "Dashboard", page: "dashboard" },
+                { icon: Users, label: "Clients", page: "clients" },
+                { icon: FileText, label: "Case Notes", page: "case-notes" },
+                { icon: CheckSquare, label: "Tasks", page: "tasks" },
+                { icon: PieChart, label: "Reports", page: "reports" },
               ].map((item, index) => (
-                <Link
+                <button
                   key={item.label}
-                  href="#"
-                  onClick={() => !item.active && handleComingSoon(item.label)}
-                  className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all duration-300 hover:scale-105 animate-slide-in-left ${
-                    item.active
+                  onClick={() => {
+                    if (item.page === 'clients') {
+                      handleNavigateTo('clients');
+                    } else if (item.page === 'dashboard') {
+                      handleNavigateTo('dashboard');
+                    } else {
+                      handleComingSoon(item.label);
+                    }
+                  }}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-3 transition-all duration-300 hover:scale-105 animate-slide-in-left text-left ${
+                    currentPage === item.page
                       ? "bg-gradient-to-r from-emerald-500/10 to-teal-500/10 text-emerald-700 border border-emerald-200/50 shadow-sm"
                       : "text-gray-600 hover:bg-white/50 hover:text-emerald-700 hover:shadow-md"
                   }`}
@@ -172,7 +190,7 @@ export default function HomeScreen({ user, onLogout }) {
                 >
                   <item.icon className="h-5 w-5 transition-transform duration-200 hover:scale-110" />
                   {item.label}
-                </Link>
+                </button>
               ))}
             </nav>
             
@@ -300,7 +318,7 @@ export default function HomeScreen({ user, onLogout }) {
                 </div>
                 <Button 
                   className="bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-700 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 text-xs md:text-sm px-3 py-1 md:px-4 md:py-2 hover:scale-105"
-                  onClick={() => handleComingSoon('Clients')}
+                  onClick={() => handleNavigateTo('clients')}
                 >
                   View All
                 </Button>
@@ -357,7 +375,7 @@ export default function HomeScreen({ user, onLogout }) {
                 <Button
                   variant="outline"
                   className="w-full border-emerald-200 hover:bg-emerald-50 hover:text-emerald-700 hover:border-emerald-300 transition-all duration-300 text-sm hover:scale-105 hover:shadow-md"
-                  onClick={() => handleComingSoon('Add Client')}
+                  onClick={() => handleNavigateTo('clients')}
                 >
                   <Plus className="mr-2 h-4 w-4 transition-transform duration-300 hover:rotate-90" />
                   Add New Client

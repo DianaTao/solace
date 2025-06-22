@@ -7,7 +7,6 @@ module.exports = {
   ],
   theme: {
     extend: {
-      // Extract these values from your Figma design system
       colors: {
         primary: {
           50: '#eff6ff',
@@ -25,7 +24,6 @@ module.exports = {
           700: '#15803d',
           900: '#14532d',
         },
-        // Add your brand colors from Figma
         brand: {
           blue: '#2563eb',
           green: '#16a34a',
@@ -34,29 +32,24 @@ module.exports = {
         }
       },
       fontFamily: {
-        // Match fonts from Figma
         sans: ['Inter', 'system-ui', 'sans-serif'],
         display: ['Poppins', 'system-ui', 'sans-serif'],
       },
       spacing: {
-        // Common spacing from Figma (8px grid system)
-        '18': '4.5rem',   // 72px
-        '88': '22rem',    // 352px
+        '18': '4.5rem',
+        '88': '22rem',
       },
       borderRadius: {
-        // Match border radius from Figma
-        'xl': '1rem',     // 16px
-        '2xl': '1.5rem',  // 24px
+        'xl': '1rem',
+        '2xl': '1.5rem',
       },
       boxShadow: {
-        // Custom shadows from Figma
         'card': '0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06)',
         'dropdown': '0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05)',
       }
     },
   },
   plugins: [
-    // Add plugins for better Figma conversion
     require('@tailwindcss/forms'),
     require('@tailwindcss/typography'),
   ],
