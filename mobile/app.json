@@ -6,7 +6,10 @@
     "orientation": "portrait",
     "userInterfaceStyle": "light",
     "sdkVersion": "53.0.0",
-    "platforms": ["ios", "android"],
+    "platforms": [
+      "ios",
+      "android"
+    ],
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#eff6ff"
@@ -20,10 +23,11 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#eff6ff"
-      }
+      },
+      "package": "com.anonymous.solacemobile"
     },
     "web": {
       "favicon": "./assets/favicon.png"
     }
   }
-} 
+}

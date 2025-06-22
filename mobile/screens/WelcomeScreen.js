@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { 
   StyleSheet, 
   Text, 
@@ -7,7 +7,9 @@ import {
   SafeAreaView,
   StatusBar,
   ScrollView,
-  Dimensions
+  Dimensions,
+  Image,
+  Animated,
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 
@@ -15,9 +17,24 @@ const { width, height } = Dimensions.get('window');
 
 export default function WelcomeScreen({ onContinue }) {
   const [currentSlide, setCurrentSlide] = useState(0);
+  const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
     console.log('👋 WelcomeScreen initialized');
+    Animated.loop(
+      Animated.sequence([
+        Animated.timing(pulseAnim, {
+          toValue: 1.05,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+        Animated.timing(pulseAnim, {
+          toValue: 1,
+          duration: 3000,
+          useNativeDriver: true,
+        }),
+      ])
+    ).start();
   }, []);
 
   const slides = [
@@ -68,6 +85,12 @@ export default function WelcomeScreen({ onContinue }) {
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="light-content" backgroundColor="#1d4ed8" />
+
+      <View style={styles.pulseContainer}>
+        <Animated.View style={[styles.pulseCircle, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }, { transform: [{ scale: pulseAnim }] }]} />
+        <Animated.View style={[styles.pulseCircle, { width: 600, height: 600, backgroundColor: 'rgba(59, 130, 246, 0.15)' }, { transform: [{ scale: pulseAnim }] }]} />
+      </View>
+
       <LinearGradient
         colors={currentSlideData.color}
         style={styles.gradient}
@@ -84,6 +107,12 @@ export default function WelcomeScreen({ onContinue }) {
           {/* Main Content */}
           <View style={styles.content}>
             
+            {/* Logo */}
+            <Image 
+              source={require('../assets/logo.png')} 
+              style={styles.logo}
+            />
+
             {/* Emoji Icon */}
             <View style={styles.emojiContainer}>
               <Text style={styles.emoji}>{currentSlideData.emoji}</Text>
@@ -174,6 +203,21 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  pulseContainer: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    bottom: 0,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  pulseCircle: {
+    position: 'absolute',
+    width: 400,
+    height: 400,
+    borderRadius: 400,
+  },
   gradient: {
     flex: 1,
   },
@@ -203,6 +247,11 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     alignItems: 'center',
     paddingVertical: 40,
+  },
+  logo: {
+    width: 120,
+    height: 120,
+    marginBottom: 32,
   },
   emojiContainer: {
     width: 120,
