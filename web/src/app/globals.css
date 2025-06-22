@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes sliding-diagonals {
+  0% {
+    background-position: 100% 100%;
+  }
+  50% {
+    background-position: 0% 0%;
+  }
+  100% {
+    background-position: 100% 100%;
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
@@ -57,16 +69,29 @@
     --chart-4: 280 65% 60%;
     --chart-5: 340 75% 55%;
   }
-}
 
-@layer base {
   * {
     border-color: hsl(var(--border));
   }
   body {
-    background-color: hsl(var(--background));
     color: hsl(var(--foreground));
   }
+}
+
+body {
+  /* Sliding Diagonals Animation */
+  background: linear-gradient(
+    135deg,
+    #e6e6fa 25%,
+    #d4e7c5 25%,
+    #d4e7c5 50%,
+    #bfd8af 50%,
+    #bfd8af 75%,
+    #b2d8b2 75%,
+    #b2d8b2 100%
+  );
+  background-size: 200% 200%;
+  animation: sliding-diagonals 15s ease-in-out infinite;
 }
 
 @layer utilities {
@@ -274,4 +299,79 @@
   .animation-delay-2000 {
     animation-delay: 2s;
   }
+}
+
+.animated-bg {
+  position: fixed;
+  inset: 0;
+  width: 100vw;
+  height: 100vh;
+  z-index: -1;
+  overflow: hidden;
+  background: linear-gradient(120deg, #e6e6fa 0%, #d4e7c5 50%, #b2d8b2 100%);
+}
+
+.animated-bg .blob {
+  position: absolute;
+  border-radius: 50%;
+  filter: blur(60px);
+  opacity: 0.6;
+  mix-blend-mode: lighten;
+}
+
+.animated-bg .blob1 {
+  width: 55vw;
+  height: 55vw;
+  left: -15vw;
+  top: -10vw;
+  background: #e6e6fa;
+  animation: blobMove1 18s ease-in-out infinite;
+}
+.animated-bg .blob2 {
+  width: 40vw;
+  height: 40vw;
+  right: -10vw;
+  top: 10vw;
+  background: #d4e7c5;
+  animation: blobMove2 22s ease-in-out infinite;
+  animation-delay: 3s;
+}
+.animated-bg .blob3 {
+  width: 35vw;
+  height: 35vw;
+  left: 20vw;
+  bottom: -12vw;
+  background: #b2d8b2;
+  animation: blobMove3 20s ease-in-out infinite;
+  animation-delay: 6s;
+}
+.animated-bg .blob4 {
+  width: 30vw;
+  height: 30vw;
+  right: 10vw;
+  bottom: -8vw;
+  background: #f5f6fa;
+  animation: blobMove4 24s ease-in-out infinite;
+  animation-delay: 9s;
+}
+
+@keyframes blobMove1 {
+  0%, 100% { transform: scale(1) translateY(0) translateX(0); }
+  33% { transform: scale(1.1) translateY(40px) translateX(60px); }
+  66% { transform: scale(0.95) translateY(-30px) translateX(-40px); }
+}
+@keyframes blobMove2 {
+  0%, 100% { transform: scale(1) translateY(0) translateX(0); }
+  25% { transform: scale(1.15) translateY(-50px) translateX(-30px); }
+  75% { transform: scale(0.9) translateY(30px) translateX(50px); }
+}
+@keyframes blobMove3 {
+  0%, 100% { transform: scale(1) translateY(0) translateX(0); }
+  40% { transform: scale(1.05) translateY(60px) translateX(-40px); }
+  80% { transform: scale(0.92) translateY(-40px) translateX(30px); }
+}
+@keyframes blobMove4 {
+  0%, 100% { transform: scale(1) translateY(0) translateX(0); }
+  30% { transform: scale(1.12) translateY(-30px) translateX(40px); }
+  60% { transform: scale(0.98) translateY(40px) translateX(-30px); }
 }
