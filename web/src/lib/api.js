@@ -20,15 +20,21 @@ class APIService {
       const config = {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
           'Authorization': `Bearer ${session.access_token}`,
           ...options.headers,
         },
         ...options,
       };
 
-      if (options.body && typeof options.body === 'object') {
-        config.body = JSON.stringify(options.body);
+      // Handle FormData vs JSON
+      if (options.isFormData) {
+        // Don't set Content-Type for FormData, let browser set it with boundary
+        config.body = options.body;
+      } else {
+        config.headers['Content-Type'] = 'application/json';
+        if (options.body && typeof options.body === 'object') {
+          config.body = JSON.stringify(options.body);
+        }
       }
 
       logger.info(`API Request: ${config.method} ${url}`, 'API');
@@ -131,6 +137,48 @@ class APIService {
       method: 'POST',
       body: noteData
     });
+  }
+
+  /**
+   * Start voice intake session
+   */
+  async startVoiceIntake(clientId, sessionType = 'intake') {
+    return await this.makeRequest('/api/case-notes/voice-intake/', {
+      method: 'POST',
+      body: {
+        client_id: clientId,
+        session_type: sessionType,
+      },
+    });
+  }
+
+  /**
+   * Upload audio for transcription and automatic note creation
+   */
+  async uploadAudioForTranscription(audioFile, clientId, sessionId = null) {
+    const formData = new FormData();
+    formData.append('audio_file', audioFile);
+    
+    if (clientId) {
+      formData.append('client_id', clientId);
+    }
+    
+    const endpoint = sessionId 
+      ? `/api/case-notes/voice-sessions/${sessionId}/upload`
+      : '/api/case-notes/transcribe-audio/';
+    
+    return await this.makeRequest(endpoint, {
+      method: 'POST',
+      body: formData,
+      isFormData: true,
+    });
+  }
+
+  /**
+   * Check voice service health
+   */
+  async checkVoiceServiceHealth() {
+    return await this.makeRequest('/api/case-notes/voice/health/');
   }
 
   // ===== TASKS =====

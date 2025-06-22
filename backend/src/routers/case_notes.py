@@ -2,7 +2,7 @@
 Case notes API endpoints with voice integration
 """
 
-from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
+from fastapi import APIRouter, Depends, HTTPException, status, Query, Body, UploadFile, File, Form
 from typing import Dict, Any, List, Optional
 from middleware.auth import get_current_user
 from services.case_notes_service import CaseNotesService
@@ -129,6 +129,111 @@ async def start_voice_intake(
         raise HTTPException(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             detail=f"Failed to start voice intake: {str(e)}"
+        )
+
+@router.post("/voice-sessions/{session_id}/upload", response_model=Dict[str, Any])
+async def upload_voice_session_audio(
+    session_id: str,
+    audio_file: UploadFile = File(...),
+    client_id: Optional[str] = Form(None),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Upload audio file for voice transcription"""
+    try:
+        # Validate file type
+        allowed_types = ["audio/wav", "audio/mp3", "audio/m4a", "audio/mp4", "audio/webm", "audio/mpeg", "audio/x-m4a", "audio/x-wav", "audio/x-mp3"]
+        if audio_file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported file type: {audio_file.content_type}. Allowed: {', '.join(allowed_types)}"
+            )
+        
+        # Read audio file
+        audio_content = await audio_file.read()
+        
+        # Transcribe using voice service
+        from services.voice_service import voice_service
+        transcript_result = await voice_service.transcribe_audio_buffer(
+            audio_buffer=audio_content,
+            filename=audio_file.filename,
+            client_id=client_id,
+            session_id=session_id
+        )
+        
+        # Create organized case note from transcript
+        organized_note = await case_notes_service.create_note_from_transcript(
+            transcript_result=transcript_result,
+            client_id=client_id or transcript_result.get("client_id"),
+            user_id=current_user["id"],
+            session_id=session_id
+        )
+        
+        return {
+            "message": "Audio transcribed and case note created successfully",
+            "transcript": transcript_result,
+            "case_note": organized_note,
+            "session_id": session_id
+        }
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to process audio upload: {str(e)}"
+        )
+
+@router.post("/transcribe-audio/", response_model=Dict[str, Any])
+async def transcribe_audio_direct(
+    audio_file: UploadFile = File(...),
+    client_id: Optional[str] = Form(None),
+    auto_create_note: bool = Form(True),
+    current_user: Dict[str, Any] = Depends(get_current_user)
+):
+    """Direct audio transcription endpoint"""
+    try:
+        # Validate file type
+        allowed_types = ["audio/wav", "audio/mp3", "audio/m4a", "audio/mp4", "audio/webm", "audio/mpeg", "audio/x-m4a", "audio/x-wav", "audio/x-mp3"]
+        if audio_file.content_type not in allowed_types:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail=f"Unsupported file type: {audio_file.content_type}. Allowed: {', '.join(allowed_types)}"
+            )
+        
+        # Read audio file
+        audio_content = await audio_file.read()
+        
+        # Transcribe using voice service
+        from services.voice_service import voice_service
+        transcript_result = await voice_service.transcribe_audio_buffer(
+            audio_buffer=audio_content,
+            filename=audio_file.filename,
+            client_id=client_id
+        )
+        
+        result = {
+            "message": "Audio transcribed successfully",
+            "transcript": transcript_result
+        }
+        
+        # Optionally create case note
+        if auto_create_note and client_id:
+            organized_note = await case_notes_service.create_note_from_transcript(
+                transcript_result=transcript_result,
+                client_id=client_id,
+                user_id=current_user["id"]
+            )
+            result["case_note"] = organized_note
+            result["message"] = "Audio transcribed and case note created successfully"
+        
+        return result
+        
+    except HTTPException:
+        raise
+    except Exception as e:
+        raise HTTPException(
+            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+            detail=f"Failed to transcribe audio: {str(e)}"
         )
 
 @router.post("/{note_id}/generate-tts/", response_model=Dict[str, Any])

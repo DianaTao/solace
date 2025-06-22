@@ -20,6 +20,7 @@ import ClientManagementScreen from './ClientManagementScreen';
 import ReportsScreen from './ReportsScreen';
 import ReportViewerScreen from './ReportViewerScreen';
 import TasksScreen from './TasksScreen';
+import VoiceNoteRecorder from '../components/VoiceNoteRecorder';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -30,6 +31,7 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
   const [apiConnected, setApiConnected] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('home');
   const [reportViewerParams, setReportViewerParams] = useState(null);
+  const [showVoiceRecorder, setShowVoiceRecorder] = useState(false);
   const [dashboardData, setDashboardData] = useState({
     stats: {
       activeClients: 0,
@@ -799,9 +801,12 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
             ))}
           </View>
           
-          <TouchableOpacity style={[styles.addButton, { borderColor: getColorClasses('teal')[0] + '40' }]}>
-            <Ionicons name="add" size={16} color={getColorClasses('teal')[0]} />
-            <Text style={[styles.addButtonText, { color: getColorClasses('teal')[0] }]}>Add New Note</Text>
+          <TouchableOpacity 
+            style={[styles.addButton, { borderColor: getColorClasses('teal')[0] + '40' }]}
+            onPress={() => setShowVoiceRecorder(true)}
+          >
+            <Ionicons name="mic" size={16} color={getColorClasses('teal')[0]} />
+            <Text style={[styles.addButtonText, { color: getColorClasses('teal')[0] }]}>Record Voice Note</Text>
           </TouchableOpacity>
         </View>
 
@@ -880,6 +885,19 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
 
       {/* Menu Overlay */}
       {menuVisible && <MenuOverlay />}
+
+      {/* Voice Note Recorder */}
+      <VoiceNoteRecorder
+        visible={showVoiceRecorder}
+        onClose={() => setShowVoiceRecorder(false)}
+        clientId={null} // For general notes, will be enhanced later for client-specific notes
+        onNoteCreated={(note) => {
+          console.log('🎤✅ Voice note created:', note);
+          // Refresh dashboard data to show new note
+          loadDashboardData();
+        }}
+        title="Record Case Note"
+      />
     </SafeAreaView>
   );
 }
