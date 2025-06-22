@@ -1,229 +1,210 @@
-# SOLACE Backend & Database
+# SOLACE Backend - Python Edition
 
-**Supabase PostgreSQL Database Configuration**
+This directory contains the Python FastAPI backend for the Solace application, providing a comprehensive API for social work operations and link-up assistance.
 
-This folder contains all database setup scripts, schemas, and configuration for the SOLACE application.
+## 🚀 Features
 
-## 🗄️ Database Overview
+- **👥 Client Management**: Complete CRUD operations for client records
+- **📋 Case Notes**: Voice-to-text case note creation and management
+- **✅ Task Management**: AI-powered task generation and tracking
+- **📊 Reports**: Multi-model AI analysis and report generation
+- **🔐 Authentication**: JWT-based authentication with role-based access
+- **⚡ Performance**: Redis caching and rate limiting
+- **🛡️ Security**: Comprehensive middleware and error handling
 
-SOLACE uses **Supabase** as the backend-as-a-service, providing:
-- **PostgreSQL Database** - Relational data storage
-- **Authentication** - User management and auth
-- **Real-time Subscriptions** - Live data updates
-- **Row Level Security** - Data protection
-- **API Auto-generation** - REST and GraphQL APIs
-
-## 📁 Files in This Directory
+## 🏗️ Architecture
 
 ```
 backend/
-├── setup-database.sql      # Main database setup script
-├── database-fix.sql        # Troubleshooting and fixes
-├── SUPABASE_SETUP.md      # Detailed Supabase setup guide
-└── README.md              # This file
+├── src/
+│   ├── config/          # Database and Redis configuration
+│   ├── middleware/      # Authentication, rate limiting, error handling
+│   ├── models/          # Pydantic data models
+│   ├── routers/         # API endpoints
+│   ├── services/        # Business logic
+│   └── utils/           # Logging and utilities
+├── requirements.txt     # Python dependencies
+├── start.py            # Development startup script
+└── package.json        # Project metadata
 ```
 
-## 🚀 Quick Setup
+## 🛠️ Technology Stack
 
-### 1. Supabase Account Setup
-1. Go to [supabase.com](https://supabase.com)
-2. Create account and new project
-3. Note your project URL and API keys
+- **Framework**: FastAPI 0.104.1
+- **Database**: Supabase (PostgreSQL)
+- **Caching**: Redis
+- **AI**: Claude 4 (Anthropic), Vapi (Voice), Fetch AI (Agents)
+- **Authentication**: JWT with Supabase Auth
+- **Deployment**: Uvicorn ASGI server
 
-### 2. Database Setup
-1. Open Supabase Dashboard → SQL Editor
-2. Copy and paste `setup-database.sql`
-3. Click "Run" to execute the script
-4. Verify tables are created in Table Editor
+## 📦 Installation
 
-### 3. Troubleshooting (if needed)
-1. If user profiles aren't being created, run `database-fix.sql`
-2. Check the logs for any errors
-3. Verify RLS policies are working
+1. **Clone and navigate to backend directory**:
+   ```bash
+   cd backend
+   ```
 
-## 📊 Database Schema
+2. **Install Python dependencies**:
+   ```bash
+   pip install -r requirements.txt
+   ```
 
-### Core Tables
+3. **Set up environment variables**:
+   ```bash
+   cp env.example .env
+   # Edit .env with your configuration
+   ```
 
-#### `users` Table
-```sql
-- id (UUID, Primary Key) - References auth.users
-- name (TEXT) - User's full name
-- email (TEXT, Unique) - Email address
-- agency (TEXT) - Social work agency
-- role (TEXT) - User role (default: 'social_worker')
-- created_at (TIMESTAMP) - Account creation time
-- updated_at (TIMESTAMP) - Last profile update
-```
-
-#### `clients` Table
-```sql
-- id (UUID, Primary Key) - Unique client identifier
-- user_id (UUID) - References users.id
-- name (TEXT) - Client's name
-- email (TEXT) - Client's email
-- phone (TEXT) - Contact number
-- address (TEXT) - Client address
-- notes (TEXT) - Additional notes
-- created_at/updated_at (TIMESTAMP) - Timestamps
-```
-
-#### `case_notes` Table
-```sql
-- id (UUID, Primary Key) - Unique note identifier
-- user_id (UUID) - References users.id
-- client_id (UUID) - References clients.id
-- title (TEXT) - Note title
-- content (TEXT) - Note content
-- category (TEXT) - Note category
-- created_at/updated_at (TIMESTAMP) - Timestamps
-```
-
-#### `tasks` Table
-```sql
-- id (UUID, Primary Key) - Unique task identifier
-- user_id (UUID) - References users.id
-- client_id (UUID) - References clients.id
-- title (TEXT) - Task title
-- description (TEXT) - Task details
-- status (TEXT) - Task status (pending/completed)
-- priority (TEXT) - Priority level
-- due_date (TIMESTAMP) - Due date
-- created_at/updated_at (TIMESTAMP) - Timestamps
-```
-
-## 🔐 Security Features
-
-### Row Level Security (RLS)
-All tables have RLS enabled with policies:
-
-- **Users can only see their own data**
-- **Users can only modify their own records**
-- **Automatic user profile creation on signup**
-
-### Authentication Trigger
-```sql
--- Automatically creates user profile when auth user is created
-CREATE FUNCTION handle_new_user()
-CREATE TRIGGER on_auth_user_created
-```
+4. **Start the development server**:
+   ```bash
+   python start.py
+   # or
+   npm run dev
+   ```
 
 ## 🔧 Configuration
 
-### Supabase Connection Details
-```
-URL: https://ccotkrhrqkldgfdjnlea.supabase.co
-Anon Key: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...
-```
+### Environment Variables
 
-### Environment Variables (if using)
+Copy `env.example` to `.env` and configure:
+
 ```env
-NEXT_PUBLIC_SUPABASE_URL=https://ccotkrhrqkldgfdjnlea.supabase.co
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
+# Application Settings
+NODE_ENV=development
+PORT=8000
+LOG_LEVEL=INFO
+
+# Database Configuration
+SUPABASE_URL=your_supabase_url_here
+SUPABASE_ANON_KEY=your_supabase_anon_key_here
+SUPABASE_JWT_SECRET=your_supabase_jwt_secret_here
+
+# Redis Configuration (Optional)
+REDIS_URL=redis://localhost:6379
+
+# CORS Configuration
+CORS_ORIGIN=http://localhost:3000,http://localhost:3001
+
+# AI Services Configuration
+ANTHROPIC_API_KEY=your_anthropic_api_key_here
 ```
 
-## 🛠️ Maintenance Scripts
+### Database Setup
 
-### Initial Setup
+1. Follow the instructions in `SUPABASE_SETUP.md` to set up your Supabase project
+2. Run the SQL scripts to set up your database schema
+3. Test the setup using the verification scripts
+
+## 🔌 API Endpoints
+
+### Health & Info
+- `GET /health` - Health check
+- `GET /api` - API information
+
+### Clients
+- `GET /api/clients` - List clients
+- `GET /api/clients/{id}` - Get client details
+- `POST /api/clients` - Create client
+- `PUT /api/clients/{id}` - Update client
+- `DELETE /api/clients/{id}` - Delete client
+
+### Case Notes
+- `GET /api/case-notes` - List case notes
+- `POST /api/case-notes` - Create case note
+
+### Tasks
+- `GET /api/tasks` - List tasks
+- `POST /api/tasks` - Create task
+
+### Reports
+- `GET /api/reports` - List reports
+- `POST /api/reports/generate` - Generate report
+
+## 🧪 Development
+
+### Running Tests
 ```bash
-# Run this in Supabase SQL Editor
-cat setup-database.sql
+pytest
 ```
 
-### Fix User Profile Issues
+### Code Formatting
 ```bash
-# If users aren't getting profiles created
-cat database-fix.sql
+black src/
 ```
 
-### Check Database Status
-```sql
--- Count users
-SELECT COUNT(*) FROM users;
-
--- Check for orphaned auth users
-SELECT au.email, au.id 
-FROM auth.users au
-LEFT JOIN public.users pu ON au.id = pu.id
-WHERE pu.id IS NULL;
+### Type Checking
+```bash
+mypy src/
 ```
 
-## 🐛 Common Issues & Solutions
-
-### Issue: Users created but no database profile
-**Solution**: Run `database-fix.sql` to fix RLS policies and create missing profiles.
-
-### Issue: Permission denied errors
-**Solution**: Check RLS policies and ensure user is authenticated.
-
-### Issue: Trigger not firing
-**Solution**: Verify trigger exists and has proper permissions.
-
-### Issue: API connection errors
-**Solution**: Verify URL and API key in app configuration.
-
-## 📈 Database Monitoring
-
-### Useful Queries
-```sql
--- Recent user signups
-SELECT email, created_at FROM users 
-ORDER BY created_at DESC LIMIT 10;
-
--- User activity summary
-SELECT 
-  u.email,
-  COUNT(cn.id) as note_count,
-  COUNT(t.id) as task_count
-FROM users u
-LEFT JOIN case_notes cn ON u.id = cn.user_id
-LEFT JOIN tasks t ON u.id = t.user_id
-GROUP BY u.id, u.email;
-
--- Check RLS policies
-SELECT * FROM pg_policies WHERE tablename = 'users';
+### Linting
+```bash
+flake8 src/
 ```
 
-## 🔄 Backup & Recovery
+## 📊 Database Schema
 
-### Automated Backups
-Supabase provides automatic daily backups for all paid plans.
+The database uses Supabase (PostgreSQL) with the following main tables:
 
-### Manual Export
-1. Go to Supabase Dashboard → Settings → Database
-2. Click "Database backups"
-3. Download backup files
+- **`profiles`** - User profiles and authentication
+- **`clients`** - Client information and case management
+- **`case_notes`** - Case notes and documentation
+- **`tasks`** - Task management and tracking
+- **`reports`** - Report generation and storage
 
-### Data Migration
-```sql
--- Export data
-COPY users TO '/path/to/users.csv' CSV HEADER;
+## 🚀 Deployment
 
--- Import data
-COPY users FROM '/path/to/users.csv' CSV HEADER;
+### Production Startup
+```bash
+python start.py production
 ```
 
-## 🔗 Related Documentation
+### Docker (Optional)
+```bash
+# Build image
+docker build -t solace-backend .
 
-- **Supabase Docs**: [supabase.com/docs](https://supabase.com/docs)
-- **PostgreSQL Docs**: [postgresql.org/docs](https://postgresql.org/docs)
-- **Web App**: `../web/README.md`
-- **Mobile App**: `../mobile/README.md`
+# Run container
+docker run -p 8000:8000 --env-file .env solace-backend
+```
 
-## 📞 Support
+## 📝 Logging
 
-### Database Issues
-1. Check Supabase Dashboard logs
-2. Verify SQL script execution
-3. Test connection from apps
-4. Review RLS policies
+Logs are written to:
+- Console (development)
+- `logs/solace.log` (all logs)
+- `logs/error.log` (errors only)
 
-### Performance Issues
-1. Check query performance in Dashboard
-2. Add indexes if needed
-3. Monitor connection usage
-4. Optimize queries
+## 🔒 Security Features
 
----
+- JWT token validation
+- Role-based access control
+- Rate limiting (100 requests/minute)
+- CORS protection
+- Request/response validation
+- Comprehensive error handling
 
-**SOLACE Backend - Secure, scalable data management for social workers.** 
+## 🤝 Contributing
+
+1. Follow the existing code structure
+2. Add tests for new features
+3. Update documentation
+4. Follow Python PEP 8 style guidelines
+
+## 📄 Legacy Database Files
+
+The following SQL files are maintained for database setup and troubleshooting:
+
+- `setup-database.sql` - Initial database setup and table creation
+- `test-signup-process.sql` - Scripts to test the signup process
+- `verify-profile-fix.sql` - Scripts to verify profile creation fixes
+- `verify-signup-ready.sql` - Scripts to verify signup readiness
+- `SUPABASE_SETUP.md` - Detailed Supabase setup instructions
+- `create-missing-profile.sql` - Script to create missing profiles
+- `database-fix.sql` - Database fixes and optimizations
+- `diagnose-signup-issues.sql` - Diagnostic scripts for signup issues
+- `direct-profile-fix.sql` - Direct profile fixes
+
+## 📄 License
+
+MIT License - see LICENSE file for details 

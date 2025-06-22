@@ -9,17 +9,33 @@ import {
   SafeAreaView,
   StatusBar,
   Animated,
-  Dimensions
+  Dimensions,
+  RefreshControl
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthService } from '../lib/auth';
+import apiService from '../lib/api';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-export default function HomeScreen({ user, onLogout }) {
+export default function HomeScreen({ user, onLogout, onShowAPITest }) {
   const [isLoading, setIsLoading] = useState(false);
+  const [refreshing, setRefreshing] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
+  const [apiConnected, setApiConnected] = useState(false);
+  const [dashboardData, setDashboardData] = useState({
+    stats: {
+      activeClients: 0,
+      pendingTasks: 0,
+      caseNotes: 0,
+      reportsDue: 0
+    },
+    clients: [],
+    tasks: [],
+    caseNotes: [],
+    reports: []
+  });
   
   // Animation values for floating icons
   const heartFloat = useRef(new Animated.Value(0)).current;
@@ -35,7 +51,98 @@ export default function HomeScreen({ user, onLogout }) {
     startFloatingAnimation(shieldFloat, 3500);
     startFloatingAnimation(sparklesFloat, 4000);
     startFloatingAnimation(targetFloat, 2800);
+    
+    // Load dashboard data
+    loadDashboardData();
   }, []);
+
+  const loadDashboardData = async () => {
+    try {
+      console.log('📊 Loading dashboard data from API...');
+      setApiConnected(true);
+      
+      const [clientsData, notesData, tasksData] = await Promise.all([
+        apiService.getClients({ limit: 5 }),
+        apiService.getCaseNotes({ limit: 5 }),
+        apiService.getTasks({ limit: 5 })
+      ]);
+
+      // Ensure we have arrays (some endpoints may return placeholder objects)
+      const safeClientsData = Array.isArray(clientsData) ? clientsData : [];
+      const safeNotesData = Array.isArray(notesData) ? notesData : [];
+      const safeTasksData = Array.isArray(tasksData) ? tasksData : [];
+
+      // Update stats with real data
+      setDashboardData({
+        stats: {
+          activeClients: safeClientsData.length,
+          pendingTasks: safeTasksData.length,
+          caseNotes: safeNotesData.length,
+          reportsDue: 0, // Will be updated when reports endpoint is available
+        },
+        clients: safeClientsData,
+        tasks: safeTasksData,
+        caseNotes: safeNotesData,
+        reports: []
+      });
+      
+      console.log('✅ Dashboard data loaded successfully from API');
+      console.log('📊 API Response Summary:', {
+        clients: safeClientsData.length,
+        tasks: safeTasksData.length,
+        notes: safeNotesData.length
+      });
+      
+    } catch (error) {
+      console.error('❌ Failed to load dashboard data:', error);
+      
+      // Check if it's an authentication error
+      if (error.message === 'USER_NOT_AUTHENTICATED') {
+        console.log('🔒 User not authenticated, showing login message');
+        setApiConnected(false);
+        setDashboardData({
+          stats: {
+            activeClients: 0,
+            pendingTasks: 0,
+            caseNotes: 0,
+            reportsDue: 0
+          },
+          clients: [],
+          tasks: [],
+          caseNotes: [],
+          reports: []
+        });
+      } else {
+        // Other API errors - show offline mode
+        setApiConnected(false);
+        setDashboardData({
+          stats: {
+            activeClients: mockClientsData.length,
+            pendingTasks: mockTasksData.length,
+            caseNotes: mockCaseNotesData.length,
+            reportsDue: mockReportsData.length
+          },
+          clients: mockClientsData,
+          tasks: mockTasksData,
+          caseNotes: mockCaseNotesData,
+          reports: mockReportsData
+        });
+        
+        // Show user-friendly error
+        Alert.alert(
+          'Connection Issue',
+          'Unable to connect to the backend. Using offline data.',
+          [{ text: 'OK' }]
+        );
+      }
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadDashboardData();
+    setRefreshing(false);
+  };
 
   const startFloatingAnimation = (animatedValue, duration) => {
     Animated.loop(
@@ -125,31 +232,53 @@ export default function HomeScreen({ user, onLogout }) {
     }
   };
 
+  // Mock data for fallback
+  const mockClientsData = [
+    { name: 'John Doe', case_number: 'Case #4209', created_at: '2d ago', id: 'mock1', status: 'active' },
+    { name: 'Alice Smith', case_number: 'Case #4183', created_at: '3d ago', id: 'mock2', status: 'active' }
+  ];
+
+  const mockTasksData = [
+    { title: 'Call John Doe about job placement', due_date: 'Due today at 2:00 PM', priority: 'high', id: 'task1' },
+    { title: 'Submit housing application', due_date: 'Due tomorrow at 9:00 AM', priority: 'medium', id: 'task2' }
+  ];
+
+  const mockCaseNotesData = [
+    { title: 'Alice Smith - Housing', created_at: 'Today', content: 'Completed housing application. Waiting for approval from county office.', id: 'note1' },
+    { title: 'John Doe - Employment', created_at: 'Yesterday', content: 'Attended job interview. Follow-up scheduled for next week.', id: 'note2' }
+  ];
+
+  const mockReportsData = [
+    { title: 'Monthly Case Summary', due_date: 'Due in 5 days', type: 'monthly', id: 'report1' },
+    { title: 'Quarterly Outcomes', due_date: 'Due in 2 weeks', type: 'quarterly', id: 'report2' }
+  ];
+
+  // Dynamic stats data based on real or mock data
   const statsData = [
-    { label: 'Active Clients', value: '42', subtitle: '+2 this week', color: 'emerald' },
-    { label: 'Pending Tasks', value: '12', subtitle: '3 due today', color: 'cyan' },
-    { label: 'Case Notes', value: '128', subtitle: '+8 this week', color: 'teal' },
-    { label: 'Reports Due', value: '5', subtitle: '2 due this week', color: 'purple' }
-  ];
-
-  const clientsData = [
-    { name: 'John Doe', case: 'Case #4209', time: '2d ago', avatar: 'JD', color: 'emerald' },
-    { name: 'Alice Smith', case: 'Case #4183', time: '3d ago', avatar: 'AS', color: 'teal' }
-  ];
-
-  const tasksData = [
-    { task: 'Call John Doe about job placement', due: 'Due today at 2:00 PM', priority: 'high' },
-    { task: 'Submit housing application', due: 'Due tomorrow at 9:00 AM', priority: 'medium' }
-  ];
-
-  const caseNotesData = [
-    { title: 'Alice Smith - Housing', time: 'Today', note: 'Completed housing application. Waiting for approval from county office.' },
-    { title: 'John Doe - Employment', time: 'Yesterday', note: 'Attended job interview. Follow-up scheduled for next week.' }
-  ];
-
-  const reportsData = [
-    { title: 'Monthly Case Summary', due: 'Due in 5 days', color: 'purple' },
-    { title: 'Quarterly Outcomes', due: 'Due in 2 weeks', color: 'pink' }
+    { 
+      label: 'Active Clients', 
+      value: dashboardData.stats.activeClients.toString(), 
+      subtitle: apiConnected ? 'From API' : 'Offline mode', 
+      color: 'emerald' 
+    },
+    { 
+      label: 'Pending Tasks', 
+      value: dashboardData.stats.pendingTasks.toString(), 
+      subtitle: apiConnected ? 'From API' : 'Offline mode', 
+      color: 'cyan' 
+    },
+    { 
+      label: 'Case Notes', 
+      value: dashboardData.stats.caseNotes.toString(), 
+      subtitle: apiConnected ? 'From API' : 'Offline mode', 
+      color: 'teal' 
+    },
+    { 
+      label: 'Reports Due', 
+      value: dashboardData.stats.reportsDue.toString(), 
+      subtitle: apiConnected ? 'From API' : 'Offline mode', 
+      color: 'purple' 
+    }
   ];
 
   const getColorClasses = (color) => {
@@ -210,6 +339,16 @@ export default function HomeScreen({ user, onLogout }) {
           <TouchableOpacity style={styles.menuItem}>
             <Ionicons name="bar-chart" size={20} color="#6b7280" />
             <Text style={styles.menuItemText}>Reports</Text>
+          </TouchableOpacity>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              onShowAPITest && onShowAPITest();
+            }}
+          >
+            <Ionicons name="server" size={20} color="#8b5cf6" />
+            <Text style={[styles.menuItemText, { color: '#8b5cf6' }]}>API Test</Text>
           </TouchableOpacity>
         </View>
 
@@ -292,7 +431,17 @@ export default function HomeScreen({ user, onLogout }) {
         </View>
       </View>
 
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
+      <ScrollView 
+        contentContainerStyle={styles.scrollContainer}
+        refreshControl={
+          <RefreshControl
+            refreshing={refreshing}
+            onRefresh={onRefresh}
+            tintColor="#059669"
+            colors={['#059669']}
+          />
+        }
+      >
         
         {/* Welcome Section */}
         <View style={styles.welcomeSection}>
@@ -335,20 +484,28 @@ export default function HomeScreen({ user, onLogout }) {
           </View>
           
           <View style={styles.featureCardContent}>
-            {clientsData.map((client, index) => (
-              <TouchableOpacity key={index} style={styles.clientItem}>
-                <View style={[styles.clientAvatar, { backgroundColor: getColorClasses(client.color)[0] }]}>
-                  <Text style={styles.clientAvatarText}>{client.avatar}</Text>
-                </View>
-                <View style={styles.clientInfo}>
-                  <Text style={styles.clientName}>{client.name}</Text>
-                  <Text style={styles.clientMeta}>{client.case} • {client.time}</Text>
-                </View>
-                <TouchableOpacity style={styles.clientViewButton}>
-                  <Text style={[styles.clientViewButtonText, { color: getColorClasses('emerald')[0] }]}>View</Text>
+            {dashboardData.clients.slice(0, 5).map((client, index) => {
+              const initials = client.name ? client.name.split(' ').map(n => n[0]).join('').toUpperCase() : 'CL';
+              const colors = ['emerald', 'teal', 'cyan', 'purple', 'pink'];
+              const clientColor = colors[index % colors.length];
+              
+              return (
+                <TouchableOpacity key={client.id || index} style={styles.clientItem}>
+                  <View style={[styles.clientAvatar, { backgroundColor: getColorClasses(clientColor)[0] }]}>
+                    <Text style={styles.clientAvatarText}>{initials}</Text>
+                  </View>
+                  <View style={styles.clientInfo}>
+                    <Text style={styles.clientName}>{client.name || 'Unknown Client'}</Text>
+                    <Text style={styles.clientMeta}>
+                      {client.case_number || 'No case number'} • {client.created_at || 'No date'}
+                    </Text>
+                  </View>
+                  <TouchableOpacity style={styles.clientViewButton}>
+                    <Text style={[styles.clientViewButtonText, { color: getColorClasses('emerald')[0] }]}>View</Text>
+                  </TouchableOpacity>
                 </TouchableOpacity>
-              </TouchableOpacity>
-            ))}
+              );
+            })}
           </View>
           
           <TouchableOpacity style={[styles.addButton, { borderColor: getColorClasses('emerald')[0] + '40' }]}>
@@ -373,14 +530,14 @@ export default function HomeScreen({ user, onLogout }) {
           </View>
           
           <View style={styles.featureCardContent}>
-            {tasksData.map((task, index) => (
-              <View key={index} style={styles.taskItem}>
+            {dashboardData.tasks.slice(0, 5).map((task, index) => (
+              <View key={task.id || index} style={styles.taskItem}>
                 <View style={[styles.taskPriority, { backgroundColor: getPriorityColor(task.priority) + '20' }]}>
                   <Ionicons name="checkmark-circle" size={16} color={getPriorityColor(task.priority)} />
                 </View>
                 <View style={styles.taskInfo}>
-                  <Text style={styles.taskText}>{task.task}</Text>
-                  <Text style={styles.taskMeta}>{task.due}</Text>
+                  <Text style={styles.taskText}>{task.title || task.task || 'Untitled Task'}</Text>
+                  <Text style={styles.taskMeta}>{task.due_date || task.due || 'No due date'}</Text>
                 </View>
               </View>
             ))}
@@ -408,13 +565,15 @@ export default function HomeScreen({ user, onLogout }) {
           </View>
           
           <View style={styles.featureCardContent}>
-            {caseNotesData.map((note, index) => (
-              <TouchableOpacity key={index} style={styles.noteItem}>
+            {dashboardData.caseNotes.slice(0, 5).map((note, index) => (
+              <TouchableOpacity key={note.id || index} style={styles.noteItem}>
                 <View style={styles.noteHeader}>
-                  <Text style={styles.noteTitle}>{note.title}</Text>
-                  <Text style={styles.noteTime}>{note.time}</Text>
+                  <Text style={styles.noteTitle}>{note.title || 'Untitled Note'}</Text>
+                  <Text style={styles.noteTime}>{note.created_at || 'No date'}</Text>
                 </View>
-                <Text style={styles.noteText} numberOfLines={2}>{note.note}</Text>
+                <Text style={styles.noteText} numberOfLines={2}>
+                  {note.content || note.note || 'No content available'}
+                </Text>
               </TouchableOpacity>
             ))}
           </View>
@@ -441,20 +600,25 @@ export default function HomeScreen({ user, onLogout }) {
           </View>
           
           <View style={styles.featureCardContent}>
-            {reportsData.map((report, index) => (
-              <View key={index} style={styles.reportItem}>
-                <View style={[styles.reportIcon, { backgroundColor: getColorClasses(report.color)[0] + '20' }]}>
-                  <Ionicons name="bar-chart" size={18} color={getColorClasses(report.color)[0]} />
+            {dashboardData.reports.slice(0, 5).map((report, index) => {
+              const colors = ['purple', 'pink', 'cyan', 'emerald', 'teal'];
+              const reportColor = colors[index % colors.length];
+              
+              return (
+                <View key={report.id || index} style={styles.reportItem}>
+                  <View style={[styles.reportIcon, { backgroundColor: getColorClasses(reportColor)[0] + '20' }]}>
+                    <Ionicons name="bar-chart" size={18} color={getColorClasses(reportColor)[0]} />
+                  </View>
+                  <View style={styles.reportInfo}>
+                    <Text style={styles.reportTitle}>{report.title || 'Untitled Report'}</Text>
+                    <Text style={styles.reportMeta}>{report.due_date || report.due || 'No due date'}</Text>
+                  </View>
+                  <TouchableOpacity style={styles.generateButton}>
+                    <Text style={[styles.generateButtonText, { color: getColorClasses(reportColor)[0] }]}>Generate</Text>
+                  </TouchableOpacity>
                 </View>
-                <View style={styles.reportInfo}>
-                  <Text style={styles.reportTitle}>{report.title}</Text>
-                  <Text style={styles.reportMeta}>{report.due}</Text>
-                </View>
-                <TouchableOpacity style={styles.generateButton}>
-                  <Text style={[styles.generateButtonText, { color: getColorClasses(report.color)[0] }]}>Generate</Text>
-                </TouchableOpacity>
-              </View>
-            ))}
+              );
+            })}
           </View>
           
           <TouchableOpacity style={[styles.addButton, { borderColor: getColorClasses('purple')[0] + '40' }]}>

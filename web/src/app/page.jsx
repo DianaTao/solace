@@ -282,6 +282,6 @@ export default function HomePage() {
         onLogin={handleLogin}
         onSwitchToSignup={() => setIsSignUpMode(true)}
       />
-    );
+  );
   }
 }

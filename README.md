@@ -23,22 +23,22 @@ solace/
 - Supabase account
 
 ### 1. Database Setup
-```bash
+   ```bash
 # Navigate to backend folder and follow database setup
 cd backend
 # Run the SQL scripts in your Supabase dashboard
-```
+   ```
 
 ### 2. Web Application
-```bash
+   ```bash
 cd web
-npm install
+   npm install
 npm run dev
 # Visit http://localhost:3000
-```
+   ```
 
 ### 3. Mobile Application
-```bash
+   ```bash
 cd mobile
 npm install
 npx expo start
@@ -101,7 +101,7 @@ npx expo start
 ## 🚀 Development
 
 ### Web Development
-```bash
+   ```bash
 cd web
 npm run dev      # Development server
 npm run build    # Production build
@@ -110,16 +110,16 @@ npm run lint     # Code linting
 ```
 
 ### Mobile Development
-```bash
+   ```bash
 cd mobile
 npx expo start           # Start development server
 npx expo start --ios     # iOS simulator
 npx expo start --android # Android emulator
 npx expo build          # Production build
-```
+   ```
 
 ### Database Development
-```bash
+   ```bash
 cd backend
 # Run SQL scripts in Supabase dashboard
 # Check database-fix.sql for troubleshooting

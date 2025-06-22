@@ -6,6 +6,7 @@ import HomeScreen from './screens/HomeScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
+import APITestScreen from './screens/APITestScreen';
 
 export default function App() {
   const [email, setEmail] = useState('');
@@ -16,6 +17,7 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
+  const [showAPITest, setShowAPITest] = useState(false);
   
   // Console log for app initialization
   useEffect(() => {
@@ -50,13 +52,31 @@ export default function App() {
   // Check if user is already logged in
   const checkCurrentUser = async () => {
     try {
+      console.log('🔍 Checking current user session...');
+      
+      // First check if there's a valid Supabase session
+      const session = await AuthService.getCurrentSession();
+      if (!session) {
+        console.log('ℹ️ No active session found');
+        return;
+      }
+      
+      // Validate that it's not just an anon session
+      const anonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjb3RrcmhycWtsZGdmZGpubGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODM4MDgsImV4cCI6MjA2NjA1OTgwOH0.-Q3LvNkbaNvfjnEoKwY53BNLPVIEvxoDzRD9z3-5NO0';
+      
+      if (session.access_token === anonKey) {
+        console.log('ℹ️ Found anon session, not authenticated user session');
+        return;
+      }
+      
+      // Now get the user profile
       const currentUser = await AuthService.getCurrentUser();
       if (currentUser) {
         console.log('👤 User already logged in:', currentUser.email);
         setUser(currentUser);
       }
     } catch (error) {
-      console.log('ℹ️ No current user session');
+      console.log('ℹ️ No current user session:', error.message);
     }
   };
 
@@ -289,9 +309,20 @@ export default function App() {
     return <WelcomeScreen onContinue={markWelcomeAsSeen} />;
   }
 
+  // Show API test screen if requested
+  if (showAPITest) {
+    return <APITestScreen onBack={() => setShowAPITest(false)} />;
+  }
+
   // If user is logged in, show HomeScreen
   if (user) {
-    return <HomeScreen user={user} onLogout={handleLogout} />;
+    return (
+      <HomeScreen 
+        user={user} 
+        onLogout={handleLogout}
+        onShowAPITest={() => setShowAPITest(true)}
+      />
+    );
   }
 
   // Otherwise show artistic login/signup screens

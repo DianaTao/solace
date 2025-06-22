@@ -19,9 +19,9 @@ if (!supabaseUrl || !supabaseAnonKey) {
 // Debug logging (development only)
 if (process.env.NODE_ENV === 'development') {
   console.log('🔧 Web Supabase config:', { // eslint-disable-line no-console
-    url: supabaseUrl, 
-    keyLength: supabaseAnonKey?.length 
-  });
+  url: supabaseUrl, 
+  keyLength: supabaseAnonKey?.length
+});
 }
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {

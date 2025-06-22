@@ -5,6 +5,8 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "sdkVersion": "53.0.0",
+    "platforms": ["ios", "android"],
     "splash": {
       "resizeMode": "contain",
       "backgroundColor": "#eff6ff"
@@ -19,6 +21,9 @@
       "adaptiveIcon": {
         "backgroundColor": "#eff6ff"
       }
+    },
+    "web": {
+      "favicon": "./assets/favicon.png"
     }
   }
 } 
