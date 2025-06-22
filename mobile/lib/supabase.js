@@ -1,11 +1,18 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { config } from '../config/env';
 
-// Supabase configuration
-// Environment-specific configuration
+// Supabase configuration - Use environment-specific configuration
 const isDev = __DEV__;
-const supabaseUrl = 'https://ccotkrhrqkldgfdjnlea.supabase.co';
-const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjb3RrcmhycWtsZGdmZGpubGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODM4MDgsImV4cCI6MjA2NjA1OTgwOH0.-Q3LvNkbaNvfjnEoKwY53BNLPVIEvxoDzRD9z3-5NO0';
+const supabaseUrl = config.SUPABASE_URL;
+const supabaseAnonKey = config.SUPABASE_ANON_KEY;
+
+// Validate configuration
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('❌ Missing Supabase configuration!');
+  console.error('Please check your config/env.js file');
+  throw new Error('Supabase configuration is missing. Please check your environment configuration.');
+}
 
 // Debug logging
 console.log('🔧 Supabase config:', { 
