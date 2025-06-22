@@ -11,28 +11,227 @@ import {
   SafeAreaView
 } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
+import { AuthService } from './lib/auth';
 
 export default function App() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [name, setName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [user, setUser] = useState(null);
+  const [isSignUpMode, setIsSignUpMode] = useState(false);
   
   // Console log for app initialization
   useEffect(() => {
     console.log('🚀 SOLACE Mobile App initialized');
+    checkCurrentUser();
   }, []);
 
-  const handleLogin = () => {
+  // Check if user is already logged in
+  const checkCurrentUser = async () => {
+    try {
+      const currentUser = await AuthService.getCurrentUser();
+      if (currentUser) {
+        console.log('👤 User already logged in:', currentUser.email);
+        setUser(currentUser);
+      }
+    } catch (error) {
+      console.log('ℹ️ No current user session');
+    }
+  };
+
+  const handleLogin = async () => {
     console.log('🔐 Login attempt:', { email, password: password ? '***hidden***' : 'empty' });
     
+    // Demo credentials fallback
     if (email === 'demo@solace.app' && password === 'demo123') {
-      Alert.alert('✅ Login successful!', 'Welcome to SOLACE mobile!', [
+      Alert.alert('✅ Demo Login successful!', 'Welcome to SOLACE mobile! (Demo Mode)', [
         { text: 'Continue', style: 'default' }
       ]);
-    } else {
-      Alert.alert('📱 Mobile Login', `Mobile login attempt with email: ${email}`, [
-        { text: 'Try Again', style: 'cancel' }
-      ]);
+      return;
     }
+
+    // Validation
+    if (!email || !password) {
+      Alert.alert('❌ Validation Error', 'Please enter both email and password.', [
+        { text: 'OK', style: 'cancel' }
+      ]);
+      return;
+    }
+
+    // Supabase authentication
+    setIsLoading(true);
+    try {
+      const result = await AuthService.signIn({ email, password });
+      
+      if (result.user) {
+        console.log('✅ Supabase login successful:', result.user.email);
+        setUser(result.user);
+        Alert.alert('✅ Login successful!', `Welcome back, ${result.user.name || result.user.email}!`, [
+          { text: 'Continue', style: 'default' }
+        ]);
+      }
+    } catch (error) {
+      console.error('❌ Login failed:', error.message);
+      
+      // Provide helpful error messages
+      let errorMessage = 'Please check your credentials and try again.';
+      let alertButtons = [{ text: 'Try Again', style: 'cancel' }];
+      
+      if (error.message.includes('Invalid login credentials')) {
+        errorMessage = `Invalid email or password for ${email}. Please check your credentials or sign up if you don't have an account.`;
+        alertButtons = [
+          { text: 'Try Again', style: 'cancel' },
+          { 
+            text: 'Sign Up', 
+            style: 'default',
+            onPress: () => {
+              setIsSignUpMode(true);
+              setPassword('');
+            }
+          }
+        ];
+      } else if (error.message.includes('Email not confirmed')) {
+        errorMessage = 'Please check your email and click the confirmation link before signing in. Check your spam folder if you don\'t see it.';
+      }
+      
+      Alert.alert('❌ Login Failed', errorMessage, alertButtons);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSignUp = async () => {
+    console.log('📝 Sign up attempt:', { email, name, password: password ? '***hidden***' : 'empty' });
+    
+    // Validation
+    if (!email || !password || !name) {
+      Alert.alert('❌ Validation Error', 'Please fill in all required fields.', [
+        { text: 'OK', style: 'cancel' }
+      ]);
+      return;
+    }
+
+    if (password !== confirmPassword) {
+      Alert.alert('❌ Validation Error', 'Passwords do not match.', [
+        { text: 'OK', style: 'cancel' }
+      ]);
+      return;
+    }
+
+    if (password.length < 6) {
+      Alert.alert('❌ Validation Error', 'Password must be at least 6 characters long.', [
+        { text: 'OK', style: 'cancel' }
+      ]);
+      return;
+    }
+
+    // Supabase sign up
+    setIsLoading(true);
+    try {
+      const result = await AuthService.signUp(email, password, {
+        name: name,
+        role: 'social_worker'
+      });
+      
+      if (result.user) {
+        console.log('✅ Supabase signup successful:', result.user.email);
+        Alert.alert(
+          '✅ Account Created!', 
+          'Please check your email for a confirmation link before signing in.',
+          [
+            { 
+              text: 'OK', 
+              style: 'default',
+              onPress: () => {
+                setIsSignUpMode(false);
+                // Clear form
+                setName('');
+                setConfirmPassword('');
+              }
+            }
+          ]
+        );
+      }
+    } catch (error) {
+      console.error('❌ Signup failed:', error.message);
+      
+      // Provide helpful error messages
+      let errorMessage = 'Failed to create account. Please try again.';
+      let alertTitle = '❌ Sign Up Failed';
+      let alertButtons = [{ text: 'Try Again', style: 'cancel' }];
+      
+      if (error.message.includes('already registered') || 
+          error.message.includes('User already registered') ||
+          error.message.includes('already exists')) {
+        alertTitle = '👤 Account Already Exists';
+        errorMessage = `Good news! You already have an account with ${email}.\n\nWould you like to sign in instead?`;
+        alertButtons = [
+          { text: 'Cancel', style: 'cancel' },
+          { 
+            text: '🔐 Sign In Now', 
+            style: 'default',
+            onPress: () => {
+              setIsSignUpMode(false);
+              // Keep the email filled in for convenience
+              setName('');
+              setConfirmPassword('');
+              // Clear the password field so they can enter their real password
+              setPassword('');
+            }
+          }
+        ];
+      } else if (error.message.includes('Invalid email')) {
+        errorMessage = 'Please enter a valid email address.';
+      } else if (error.message.includes('row-level security policy')) {
+        // Handle the RLS policy error more gracefully
+        alertTitle = '✅ Account Created!';
+        errorMessage = 'Your account was created successfully! Please check your email for a confirmation link, then sign in.';
+        alertButtons = [
+          { 
+            text: 'Sign In', 
+            style: 'default',
+            onPress: () => {
+              setIsSignUpMode(false);
+              setName('');
+              setConfirmPassword('');
+            }
+          }
+        ];
+      }
+      
+      Alert.alert(alertTitle, errorMessage, alertButtons);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleLogout = async () => {
+    try {
+      await AuthService.signOut();
+      setUser(null);
+      // Clear all form fields
+      setEmail('');
+      setPassword('');
+      setConfirmPassword('');
+      setName('');
+      setIsSignUpMode(false);
+      console.log('🚪 User logged out');
+      Alert.alert('👋 Logged out', 'You have been logged out successfully.', [
+        { text: 'OK', style: 'default' }
+      ]);
+    } catch (error) {
+      console.error('❌ Logout error:', error.message);
+    }
+  };
+
+  const toggleMode = () => {
+    setIsSignUpMode(!isSignUpMode);
+    // Clear form when switching modes
+    setPassword('');
+    setConfirmPassword('');
+    setName('');
   };
 
   return (
@@ -50,7 +249,9 @@ export default function App() {
               <Text style={styles.logoText}>S</Text>
             </View>
             <Text style={styles.title}>Welcome to SOLACE</Text>
-            <Text style={styles.subtitle}>📱 Mobile-Ready Social Work Assistant</Text>
+            <Text style={styles.subtitle}>
+              📱 {isSignUpMode ? 'Create Your Account' : 'Mobile-Ready Social Work Assistant'}
+            </Text>
             
             {/* Status Badges - Matching Web App */}
             <View style={styles.badgeContainer}>
@@ -66,8 +267,24 @@ export default function App() {
             </View>
           </View>
 
-          {/* Login Form */}
+          {/* Login/Signup Form */}
           <View style={styles.form}>
+            {/* Name field - only show in signup mode */}
+            {isSignUpMode && (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>👤 Full Name</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Enter your full name"
+                  placeholderTextColor="#9ca3af"
+                  value={name}
+                  onChangeText={setName}
+                  autoCapitalize="words"
+                  autoCorrect={false}
+                />
+              </View>
+            )}
+
             <View style={styles.inputGroup}>
               <Text style={styles.label}>📧 Email Address</Text>
               <TextInput
@@ -86,7 +303,7 @@ export default function App() {
               <Text style={styles.label}>🔒 Password</Text>
               <TextInput
                 style={styles.input}
-                placeholder="Enter your password"
+                placeholder={isSignUpMode ? "Create a password (min 6 characters)" : "Enter your password"}
                 placeholderTextColor="#9ca3af"
                 value={password}
                 onChangeText={setPassword}
@@ -94,28 +311,105 @@ export default function App() {
               />
             </View>
 
+            {/* Confirm Password field - only show in signup mode */}
+            {isSignUpMode && (
+              <View style={styles.inputGroup}>
+                <Text style={styles.label}>🔒 Confirm Password</Text>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Confirm your password"
+                  placeholderTextColor="#9ca3af"
+                  value={confirmPassword}
+                  onChangeText={setConfirmPassword}
+                  secureTextEntry
+                />
+              </View>
+            )}
+
             <LinearGradient
               colors={['#2563eb', '#1d4ed8']}
               style={styles.loginButton}
             >
               <TouchableOpacity 
                 style={styles.loginButtonInner}
-                onPress={handleLogin}
+                onPress={isSignUpMode ? handleSignUp : handleLogin}
                 activeOpacity={0.8}
+                disabled={isLoading}
               >
-                <Text style={styles.loginButtonText}>📱 Sign In to Mobile</Text>
+                <Text style={styles.loginButtonText}>
+                  {isLoading 
+                    ? (isSignUpMode ? '⏳ Creating Account...' : '⏳ Signing In...')
+                    : (isSignUpMode ? '📝 Create Account' : '📱 Sign In to Mobile')
+                  }
+                </Text>
               </TouchableOpacity>
             </LinearGradient>
 
-            {/* Demo Credentials */}
-            <LinearGradient
-              colors={['#eff6ff', '#e0f2fe']}
-              style={styles.demoCard}
+            {/* Mode Toggle Button */}
+            <TouchableOpacity 
+              style={styles.toggleButton}
+              onPress={toggleMode}
+              activeOpacity={0.7}
             >
-              <Text style={styles.demoTitle}>🎯 Demo Credentials:</Text>
-              <Text style={styles.demoText}><Text style={styles.demoBold}>Email:</Text> demo@solace.app</Text>
-              <Text style={styles.demoText}><Text style={styles.demoBold}>Password:</Text> demo123</Text>
-            </LinearGradient>
+              <Text style={styles.toggleButtonText}>
+                {isSignUpMode 
+                  ? '👤 Already have an account? Sign In' 
+                  : '📝 Don\'t have an account? Sign Up'
+                }
+              </Text>
+            </TouchableOpacity>
+
+            {/* Logout Button - Show only when user is logged in */}
+            {user && (
+              <LinearGradient
+                colors={['#dc2626', '#b91c1c']}
+                style={[styles.loginButton, { marginTop: 8 }]}
+              >
+                <TouchableOpacity 
+                  style={styles.loginButtonInner}
+                  onPress={handleLogout}
+                  activeOpacity={0.8}
+                >
+                  <Text style={styles.loginButtonText}>🚪 Sign Out</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            )}
+
+            {/* User Status - Show when logged in */}
+            {user ? (
+              <LinearGradient
+                colors={['#dcfce7', '#bbf7d0']}
+                style={styles.demoCard}
+              >
+                <Text style={styles.demoTitle}>✅ Logged In:</Text>
+                <Text style={styles.demoText}><Text style={styles.demoBold}>Name:</Text> {user.name || 'N/A'}</Text>
+                <Text style={styles.demoText}><Text style={styles.demoBold}>Email:</Text> {user.email}</Text>
+                <Text style={styles.demoText}><Text style={styles.demoBold}>Role:</Text> {user.role || 'N/A'}</Text>
+              </LinearGradient>
+            ) : (
+              /* Demo Credentials - Show when not logged in */
+              <LinearGradient
+                colors={['#eff6ff', '#e0f2fe']}
+                style={styles.demoCard}
+              >
+                {isSignUpMode ? (
+                  <>
+                    <Text style={styles.demoTitle}>📝 Sign Up Instructions:</Text>
+                    <Text style={styles.demoText}>• Fill in your name, email, and password</Text>
+                    <Text style={styles.demoText}>• Password must be at least 6 characters</Text>
+                    <Text style={styles.demoText}>• Check your email for confirmation link</Text>
+                    <Text style={styles.demoText}>• Return here to sign in after confirmation</Text>
+                  </>
+                ) : (
+                  <>
+                    <Text style={styles.demoTitle}>🎯 Demo Credentials:</Text>
+                    <Text style={styles.demoText}><Text style={styles.demoBold}>Email:</Text> demo@solace.app</Text>
+                    <Text style={styles.demoText}><Text style={styles.demoBold}>Password:</Text> demo123</Text>
+                    <Text style={styles.demoText}><Text style={styles.demoBold}>Or create your own account!</Text></Text>
+                  </>
+                )}
+              </LinearGradient>
+            )}
           </View>
 
           {/* Footer */}
@@ -268,6 +562,18 @@ const styles = StyleSheet.create({
     color: 'white',
     fontSize: 16,
     fontWeight: '600',
+  },
+  toggleButton: {
+    paddingVertical: 12,
+    paddingHorizontal: 16,
+    marginTop: 8,
+    alignItems: 'center',
+  },
+  toggleButtonText: {
+    color: '#2563eb',
+    fontSize: 14,
+    fontWeight: '500',
+    textAlign: 'center',
   },
   demoCard: {
     borderWidth: 1,

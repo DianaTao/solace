@@ -26,7 +26,16 @@ Before running the mobile app, make sure you have:
    npm install
    ```
 
-3. **Start the Expo development server:**
+3. **Set up environment configuration:**
+   ```bash
+   # Copy the environment template
+   cp config/env.template.js config/env.js
+   
+   # Edit config/env.js with your Supabase credentials
+   # See SUPABASE_SETUP.md for detailed instructions
+   ```
+
+4. **Start the Expo development server:**
    ```bash
    npx expo start
    ```
