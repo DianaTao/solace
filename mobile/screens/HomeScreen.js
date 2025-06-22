@@ -18,6 +18,7 @@ import { AuthService } from '../lib/auth';
 import apiService from '../lib/api';
 import ClientManagementScreen from './ClientManagementScreen';
 import ReportsScreen from './ReportsScreen';
+import ReportViewerScreen from './ReportViewerScreen';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -27,6 +28,7 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
   const [menuVisible, setMenuVisible] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
   const [currentScreen, setCurrentScreen] = useState('home');
+  const [reportViewerParams, setReportViewerParams] = useState(null);
   const [dashboardData, setDashboardData] = useState({
     stats: {
       activeClients: 0,
@@ -399,15 +401,111 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
   const handleNavigateHome = () => {
     console.log('🏠 Navigating back to Home');
     setCurrentScreen('home');
+  };
 
   const handleNavigateToReports = () => {
     console.log('📊 Navigating to Reports');
     setCurrentScreen('reports');
-  };  };
+  };
 
-  const handleNavigateToReports = () => {
-    console.log('📊 Navigating to Reports');
-    setCurrentScreen('reports');
+  const handleCreateCustomReport = () => {
+    Alert.alert(
+      'Create Custom Report',
+      'Choose the type of report you want to generate:',
+      [
+        {
+          text: 'Cancel',
+          style: 'cancel'
+        },
+        {
+          text: 'Monthly Report',
+          onPress: () => handleGenerateMonthlyReport()
+        },
+        {
+          text: 'Quarterly Report',
+          onPress: () => handleGenerateQuarterlyReport()
+        }
+      ],
+      { cancelable: true }
+    );
+  };
+
+  const handleGenerateMonthlyReport = async () => {
+    const currentDate = new Date();
+    const month = currentDate.getMonth() + 1;
+    const year = currentDate.getFullYear();
+
+    Alert.alert(
+      'Generate Monthly Report',
+      `Generate case summary for ${month}/${year}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Generate',
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              const response = await apiService.generateMonthlyCaseSummary(month, year);
+              
+              if (response.report) {
+                setReportViewerParams({
+                  report: response.report,
+                  title: 'Monthly Case Summary'
+                });
+                setCurrentScreen('reportViewer');
+              } else {
+                Alert.alert('Success', 'Monthly report generated! Navigate to Reports to view it.');
+                setCurrentScreen('reports');
+              }
+            } catch (error) {
+              console.error('Error generating monthly report:', error);
+              Alert.alert('Error', 'Failed to generate monthly report. Please try again.');
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        }
+      ]
+    );
+  };
+
+  const handleGenerateQuarterlyReport = async () => {
+    const currentDate = new Date();
+    const quarter = Math.ceil((currentDate.getMonth() + 1) / 3);
+    const year = currentDate.getFullYear();
+
+    Alert.alert(
+      'Generate Quarterly Report',
+      `Generate outcome report for Q${quarter} ${year}?`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Generate',
+          onPress: async () => {
+            try {
+              setIsLoading(true);
+              const response = await apiService.generateQuarterlyOutcomeReport(quarter, year);
+              
+              if (response.report) {
+                setReportViewerParams({
+                  report: response.report,
+                  title: 'Quarterly Outcome Report'
+                });
+                setCurrentScreen('reportViewer');
+              } else {
+                Alert.alert('Success', 'Quarterly report generated! Navigate to Reports to view it.');
+                setCurrentScreen('reports');
+              }
+            } catch (error) {
+              console.error('Error generating quarterly report:', error);
+              Alert.alert('Error', 'Failed to generate quarterly report. Please try again.');
+            } finally {
+              setIsLoading(false);
+            }
+          }
+        }
+      ]
+    );
   };
 
   // If we're on the client management screen, render that instead
@@ -420,6 +518,21 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
     );
   }
 
+  // If we're on the report viewer screen, render that instead
+  if (currentScreen === 'reportViewer' && reportViewerParams) {
+    return (
+      <ReportViewerScreen 
+        route={{ params: reportViewerParams }}
+        navigation={{ 
+          goBack: () => {
+            setCurrentScreen('reports');
+            setReportViewerParams(null);
+          }
+        }}
+      />
+    );
+  }
+
   // If we're on the reports screen, render that instead
   if (currentScreen === 'reports') {
     return (
@@ -428,9 +541,9 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
           goBack: handleNavigateHome,
           navigate: (screenName, params) => {
             if (screenName === 'ReportViewer') {
-              // For now, just log - you might want to handle this differently
               console.log('📄 Navigate to ReportViewer with params:', params);
-              Alert.alert('Report Generated', 'Report viewing functionality will be available soon!');
+              setReportViewerParams(params);
+              setCurrentScreen('reportViewer');
             }
           }
         }}
@@ -670,7 +783,10 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
               </Text>
               <Text style={styles.featureCardDescription}>Generate reports</Text>
             </View>
-            <TouchableOpacity style={[styles.viewAllButton, { backgroundColor: getColorClasses('purple')[0] }]}>
+            <TouchableOpacity 
+              style={[styles.viewAllButton, { backgroundColor: getColorClasses('purple')[0] }]}
+              onPress={handleNavigateToReports}
+            >
               <Text style={styles.viewAllButtonText}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -689,7 +805,10 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
                     <Text style={styles.reportTitle}>{report.title || 'Untitled Report'}</Text>
                     <Text style={styles.reportMeta}>{report.due_date || report.due || 'No due date'}</Text>
                   </View>
-                  <TouchableOpacity style={styles.generateButton}>
+                  <TouchableOpacity 
+                    style={styles.generateButton}
+                    onPress={handleCreateCustomReport}
+                  >
                     <Text style={[styles.generateButtonText, { color: getColorClasses(reportColor)[0] }]}>Generate</Text>
                   </TouchableOpacity>
                 </View>
@@ -697,7 +816,10 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
             })}
           </View>
           
-          <TouchableOpacity style={[styles.addButton, { borderColor: getColorClasses('purple')[0] + '40' }]}>
+          <TouchableOpacity 
+            style={[styles.addButton, { borderColor: getColorClasses('purple')[0] + '40' }]}
+            onPress={handleCreateCustomReport}
+          >
             <Ionicons name="add" size={16} color={getColorClasses('purple')[0]} />
             <Text style={[styles.addButtonText, { color: getColorClasses('purple')[0] }]}>Create Custom Report</Text>
           </TouchableOpacity>

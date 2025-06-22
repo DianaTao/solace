@@ -249,7 +249,7 @@ Provide analysis in this JSON format:
             
             # Call Claude API
             response = self.client.messages.create(
-                model="claude-3-sonnet-20240229",
+                model="claude-3-5-sonnet-20241022",
                 max_tokens=1500,
                 temperature=0.3,
                 messages=[{"role": "user", "content": prompt}]
@@ -324,7 +324,7 @@ Provide strategic analysis in this JSON format:
             
             # Call Claude API
             response = self.client.messages.create(
-                model="claude-3-sonnet-20240229",
+                model="claude-3-5-sonnet-20241022",
                 max_tokens=2000,
                 temperature=0.3,
                 messages=[{"role": "user", "content": prompt}]
