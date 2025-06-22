@@ -17,7 +17,7 @@ client_service = ClientService()
 async def get_clients(
     skip: int = Query(0, ge=0),
     limit: int = Query(50, ge=1, le=100),
-    status: Optional[str] = None,
+    client_status: Optional[str] = None,
     priority: Optional[str] = None,
     search: Optional[str] = None,
     current_user: Dict[str, Any] = Depends(get_current_user)
@@ -28,7 +28,7 @@ async def get_clients(
             user_id=current_user["id"],
             skip=skip,
             limit=limit,
-            status=status,
+            status=client_status,
             priority=priority,
             search=search
         )

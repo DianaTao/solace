@@ -24,7 +24,7 @@ async function testConnection() {
   try {
     // Test health endpoint
     console.log('\n1. Testing health endpoint...');
-    const healthResponse = await fetch(`${apiUrl}/health`);
+    const healthResponse = await fetch(`${apiUrl}/api/health`);
     
     if (healthResponse.ok) {
       const healthData = await healthResponse.json();
@@ -38,14 +38,14 @@ async function testConnection() {
     
     // Test API info endpoint
     console.log('\n2. Testing API info endpoint...');
-    const infoResponse = await fetch(`${apiUrl}/api`);
+    const infoResponse = await fetch(`${apiUrl}/`);
     
     if (infoResponse.ok) {
       const infoData = await infoResponse.json();
       console.log('✅ API info retrieved!');
-      console.log(`   Name: ${infoData.name}`);
+      console.log(`   Message: ${infoData.message}`);
       console.log(`   Version: ${infoData.version}`);
-      console.log(`   Features: ${Object.keys(infoData.features).length} available`);
+      console.log(`   Status: ${infoData.status}`);
     } else {
       console.log(`❌ API info failed: ${infoResponse.status}`);
     }
@@ -61,7 +61,7 @@ async function testConnection() {
     console.log('   2. Check if you\'re using the correct IP address');
     console.log('   3. For physical devices, use your computer\'s IP instead of localhost');
     console.log('   4. Make sure your device and computer are on the same network');
-    console.log(`   5. Test manually: curl ${apiUrl}/health`);
+    console.log(`   5. Test manually: curl ${apiUrl}/api/health`);
   }
 }
 

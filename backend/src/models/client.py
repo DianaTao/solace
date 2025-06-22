@@ -26,6 +26,7 @@ class ClientBase(BaseModel):
     address: Optional[str] = None
     emergency_contact: Optional[str] = None
     emergency_phone: Optional[str] = None
+    case_type: Optional[str] = "general"
     status: ClientStatus = ClientStatus.ACTIVE
     priority: ClientPriority = ClientPriority.MEDIUM
     notes: Optional[str] = None
@@ -48,6 +49,7 @@ class ClientUpdate(BaseModel):
     address: Optional[str] = None
     emergency_contact: Optional[str] = None
     emergency_phone: Optional[str] = None
+    case_type: Optional[str] = None
     status: Optional[ClientStatus] = None
     priority: Optional[ClientPriority] = None
     notes: Optional[str] = None
@@ -55,8 +57,8 @@ class ClientUpdate(BaseModel):
 
 class Client(ClientBase):
     id: str
-    case_number: str
-    social_worker_id: str
+    case_number: Optional[str] = None
+    social_worker_id: Optional[str] = None
     created_at: datetime
     updated_at: datetime
     

@@ -16,6 +16,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { AuthService } from '../lib/auth';
 import apiService from '../lib/api';
+import ClientManagementScreen from './ClientManagementScreen';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -24,6 +25,7 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
   const [refreshing, setRefreshing] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
   const [apiConnected, setApiConnected] = useState(false);
+  const [currentScreen, setCurrentScreen] = useState('home');
   const [dashboardData, setDashboardData] = useState({
     stats: {
       activeClients: 0,
@@ -324,7 +326,13 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
             <Ionicons name="home" size={20} color="#059669" />
             <Text style={[styles.menuItemText, styles.menuItemTextActive]}>Dashboard</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              handleNavigateToClients();
+            }}
+          >
             <Ionicons name="people" size={20} color="#6b7280" />
             <Text style={styles.menuItemText}>Clients</Text>
           </TouchableOpacity>
@@ -367,6 +375,34 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
       </View>
     </View>
   );
+
+  const handleComingSoon = (feature) => {
+    Alert.alert(
+      'Coming Soon! 🚧',
+      `The ${feature} feature is being developed and will be available soon.`,
+      [{ text: 'OK' }]
+    );
+  };
+
+  const handleNavigateToClients = () => {
+    console.log('📋 Navigating to Client Management');
+    setCurrentScreen('clients');
+  };
+
+  const handleNavigateHome = () => {
+    console.log('🏠 Navigating back to Home');
+    setCurrentScreen('home');
+  };
+
+  // If we're on the client management screen, render that instead
+  if (currentScreen === 'clients') {
+    return (
+      <ClientManagementScreen 
+        user={user} 
+        onBack={handleNavigateHome}
+      />
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container}>
@@ -478,7 +514,10 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
               </Text>
               <Text style={styles.featureCardDescription}>Manage client records</Text>
             </View>
-            <TouchableOpacity style={[styles.viewAllButton, { backgroundColor: getColorClasses('emerald')[0] }]}>
+            <TouchableOpacity 
+              style={[styles.viewAllButton, { backgroundColor: getColorClasses('emerald')[0] }]}
+              onPress={handleNavigateToClients}
+            >
               <Text style={styles.viewAllButtonText}>View All</Text>
             </TouchableOpacity>
           </View>
@@ -508,7 +547,10 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
             })}
           </View>
           
-          <TouchableOpacity style={[styles.addButton, { borderColor: getColorClasses('emerald')[0] + '40' }]}>
+          <TouchableOpacity 
+            style={[styles.addButton, { borderColor: getColorClasses('emerald')[0] + '40' }]}
+            onPress={handleNavigateToClients}
+          >
             <Ionicons name="add" size={16} color={getColorClasses('emerald')[0]} />
             <Text style={[styles.addButtonText, { color: getColorClasses('emerald')[0] }]}>Add New Client</Text>
           </TouchableOpacity>
