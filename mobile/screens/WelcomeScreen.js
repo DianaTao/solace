@@ -21,7 +21,7 @@ export default function WelcomeScreen({ onContinue }) {
 
   useEffect(() => {
     console.log('👋 WelcomeScreen initialized');
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.05,
@@ -34,7 +34,9 @@ export default function WelcomeScreen({ onContinue }) {
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, []);
 
   const slides = [
@@ -87,8 +89,8 @@ export default function WelcomeScreen({ onContinue }) {
       <StatusBar barStyle="light-content" backgroundColor="#1d4ed8" />
 
       <View style={styles.pulseContainer}>
-        <Animated.View style={[styles.pulseCircle, { backgroundColor: 'rgba(59, 130, 246, 0.2)' }, { transform: [{ scale: pulseAnim }] }]} />
-        <Animated.View style={[styles.pulseCircle, { width: 600, height: 600, backgroundColor: 'rgba(59, 130, 246, 0.15)' }, { transform: [{ scale: pulseAnim }] }]} />
+        <Animated.View style={[styles.pulseCircle, { backgroundColor: 'rgba(255, 255, 255, 0.2)' }, { transform: [{ scale: pulseAnim }] }]} />
+        <Animated.View style={[styles.pulseCircle, { width: 150, height: 150, backgroundColor: 'rgba(255, 255, 255, 0.15)' }, { transform: [{ scale: pulseAnim }] }]} />
       </View>
 
       <LinearGradient
@@ -214,9 +216,9 @@ const styles = StyleSheet.create({
   },
   pulseCircle: {
     position: 'absolute',
-    width: 400,
-    height: 400,
-    borderRadius: 400,
+    width: 120,
+    height: 120,
+    borderRadius: 60,
   },
   gradient: {
     flex: 1,
@@ -252,12 +254,14 @@ const styles = StyleSheet.create({
     width: 120,
     height: 120,
     marginBottom: 32,
+    position: 'absolute',
+    top: 0,
   },
   emojiContainer: {
     width: 120,
     height: 120,
     borderRadius: 60,
-    backgroundColor: 'rgba(255,255,255,0.2)',
+    backgroundColor: 'transparent',
     justifyContent: 'center',
     alignItems: 'center',
     marginBottom: 32,

@@ -30,7 +30,7 @@ export default function LoginScreen({
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.05,
@@ -43,7 +43,9 @@ export default function LoginScreen({
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, []);
 
   const handleSubmit = () => {
@@ -60,6 +62,10 @@ export default function LoginScreen({
         colors={['#f4f7f9', '#e0e7ff', '#f3f4f6']}
         style={styles.backgroundGradient}
       />
+
+      <View style={styles.topPulseContainer}>
+        <Animated.View style={[styles.topPulseCircle, { transform: [{ scale: pulseAnim }] }]} />
+      </View>
 
       <View style={styles.pulseContainer}>
         <Animated.View style={[styles.pulseCircle, styles.pulseCircle1, { transform: [{ scale: pulseAnim }] }]} />
@@ -149,6 +155,17 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     height: height,
+  },
+  topPulseContainer: {
+    position: 'absolute',
+    top: (StatusBar.currentHeight || 40) + 20,
+    alignSelf: 'center',
+  },
+  topPulseCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(59, 130, 246, 0.1)',
   },
   pulseContainer: {
     position: 'absolute',

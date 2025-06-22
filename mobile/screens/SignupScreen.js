@@ -35,7 +35,7 @@ export default function SignupScreen({
   const pulseAnim = useRef(new Animated.Value(1)).current;
 
   useEffect(() => {
-    Animated.loop(
+    const animation = Animated.loop(
       Animated.sequence([
         Animated.timing(pulseAnim, {
           toValue: 1.05,
@@ -48,7 +48,9 @@ export default function SignupScreen({
           useNativeDriver: true,
         }),
       ])
-    ).start();
+    );
+    animation.start();
+    return () => animation.stop();
   }, []);
 
   const handleSubmit = () => {
@@ -65,6 +67,10 @@ export default function SignupScreen({
         colors={['#f4f7f9', '#e0f2fe', '#f3f4f6']}
         style={styles.backgroundGradient}
       />
+
+      <View style={styles.topPulseContainer}>
+        <Animated.View style={[styles.topPulseCircle, { transform: [{ scale: pulseAnim }] }]} />
+      </View>
 
       <View style={styles.pulseContainer}>
         <Animated.View style={[styles.pulseCircle, styles.pulseCircle1, { transform: [{ scale: pulseAnim }] }]} />
@@ -180,6 +186,17 @@ const styles = StyleSheet.create({
     right: 0,
     top: 0,
     height: height,
+  },
+  topPulseContainer: {
+    position: 'absolute',
+    top: (StatusBar.currentHeight || 40) + 20,
+    alignSelf: 'center',
+  },
+  topPulseCircle: {
+    width: 60,
+    height: 60,
+    borderRadius: 30,
+    backgroundColor: 'rgba(14, 165, 233, 0.1)', // Sign up color
   },
   pulseContainer: {
     position: 'absolute',
