@@ -10,8 +10,11 @@ import {
   ScrollView,
   SafeAreaView
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { AuthService } from './lib/auth';
+import HomeScreen from './screens/HomeScreen';
+import WelcomeScreen from './screens/WelcomeScreen';
 
 export default function App() {
   const [email, setEmail] = useState('');
@@ -21,12 +24,37 @@ export default function App() {
   const [isLoading, setIsLoading] = useState(false);
   const [user, setUser] = useState(null);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
   
   // Console log for app initialization
   useEffect(() => {
     console.log('🚀 SOLACE Mobile App initialized');
+    checkWelcomeStatus();
     checkCurrentUser();
   }, []);
+
+  // Check if user has already seen the welcome screen
+  const checkWelcomeStatus = async () => {
+    try {
+      const hasSeenWelcome = await AsyncStorage.getItem('hasSeenWelcome');
+      if (hasSeenWelcome === 'true') {
+        setShowWelcome(false);
+      }
+    } catch (error) {
+      console.log('ℹ️ Could not check welcome status:', error.message);
+    }
+  };
+
+  // Mark welcome as seen
+  const markWelcomeAsSeen = async () => {
+    try {
+      await AsyncStorage.setItem('hasSeenWelcome', 'true');
+      setShowWelcome(false);
+    } catch (error) {
+      console.log('ℹ️ Could not save welcome status:', error.message);
+      setShowWelcome(false); // Continue anyway
+    }
+  };
 
   // Check if user is already logged in
   const checkCurrentUser = async () => {
@@ -217,10 +245,7 @@ export default function App() {
       setConfirmPassword('');
       setName('');
       setIsSignUpMode(false);
-      console.log('🚪 User logged out');
-      Alert.alert('👋 Logged out', 'You have been logged out successfully.', [
-        { text: 'OK', style: 'default' }
-      ]);
+      console.log('🚪 User logged out from App.js');
     } catch (error) {
       console.error('❌ Logout error:', error.message);
     }
@@ -268,6 +293,17 @@ export default function App() {
     }
   };
 
+  // Show welcome screen first
+  if (showWelcome) {
+    return <WelcomeScreen onContinue={markWelcomeAsSeen} />;
+  }
+
+  // If user is logged in, show HomeScreen
+  if (user) {
+    return <HomeScreen user={user} onLogout={handleLogout} />;
+  }
+
+  // Otherwise show login/signup form
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />

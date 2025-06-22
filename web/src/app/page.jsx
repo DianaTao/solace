@@ -2,6 +2,8 @@
 
 import { useState, useEffect } from 'react';
 import { AuthService } from '../lib/auth';
+import HomeScreen from '../components/HomeScreen';
+import WelcomeScreen from '../components/WelcomeScreen';
 
 export default function HomePage() {
   const [email, setEmail] = useState('');
@@ -13,9 +15,13 @@ export default function HomePage() {
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isInstallable, setIsInstallable] = useState(false);
+  const [showWelcome, setShowWelcome] = useState(true);
 
   useEffect(() => {
     console.log('🚀 SOLACE Web App initialized');
+    
+    // Check if user has seen welcome screen
+    checkWelcomeStatus();
     
     // Add a small delay to ensure Supabase is fully initialized
     const initializeAuth = async () => {
@@ -39,6 +45,29 @@ export default function HomePage() {
     window.addEventListener('beforeinstallprompt', handler);
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
+
+  // Check if user has already seen the welcome screen
+  const checkWelcomeStatus = () => {
+    try {
+      const hasSeenWelcome = localStorage.getItem('hasSeenWelcome');
+      if (hasSeenWelcome === 'true') {
+        setShowWelcome(false);
+      }
+    } catch (error) {
+      console.log('ℹ️ Could not check welcome status:', error.message);
+    }
+  };
+
+  // Mark welcome as seen
+  const markWelcomeAsSeen = () => {
+    try {
+      localStorage.setItem('hasSeenWelcome', 'true');
+      setShowWelcome(false);
+    } catch (error) {
+      console.log('ℹ️ Could not save welcome status:', error.message);
+      setShowWelcome(false); // Continue anyway
+    }
+  };
 
   // Check if user is already logged in
   const checkCurrentUser = async () => {
@@ -199,8 +228,7 @@ export default function HomePage() {
       setConfirmPassword('');
       setName('');
       setIsSignUpMode(false);
-      console.log('🚪 User logged out');
-      alert('👋 Logged out: You have been logged out successfully.');
+      console.log('🚪 User logged out from web app');
     } catch (error) {
       console.error('❌ Logout error:', error.message);
     }
@@ -214,6 +242,17 @@ export default function HomePage() {
     setName('');
   };
 
+  // Show welcome screen first
+  if (showWelcome) {
+    return <WelcomeScreen onContinue={markWelcomeAsSeen} />;
+  }
+
+  // If user is logged in, show HomeScreen
+  if (user) {
+    return <HomeScreen user={user} onLogout={handleLogout} />;
+  }
+
+  // Otherwise show login/signup form
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-blue-50 flex items-center justify-center py-6 px-4">
       <div className="max-w-md w-full space-y-6">
