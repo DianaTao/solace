@@ -19,6 +19,7 @@ import apiService from '../lib/api';
 import ClientManagementScreen from './ClientManagementScreen';
 import ReportsScreen from './ReportsScreen';
 import ReportViewerScreen from './ReportViewerScreen';
+import TasksScreen from './TasksScreen';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
@@ -343,7 +344,13 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
             <Ionicons name="document-text" size={20} color="#6b7280" />
             <Text style={styles.menuItemText}>Case Notes</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.menuItem}>
+          <TouchableOpacity 
+            style={styles.menuItem}
+            onPress={() => {
+              setMenuVisible(false);
+              handleNavigateToTasks();
+            }}
+          >
             <Ionicons name="checkmark-circle" size={20} color="#6b7280" />
             <Text style={styles.menuItemText}>Tasks</Text>
           </TouchableOpacity>
@@ -406,6 +413,11 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
   const handleNavigateToReports = () => {
     console.log('📊 Navigating to Reports');
     setCurrentScreen('reports');
+  };
+
+  const handleNavigateToTasks = () => {
+    console.log('✅ Navigating to Tasks');
+    setCurrentScreen('tasks');
   };
 
   const handleCreateCustomReport = () => {
@@ -527,6 +539,26 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
           goBack: () => {
             setCurrentScreen('reports');
             setReportViewerParams(null);
+          }
+        }}
+      />
+    );
+  }
+
+  // If we're on the tasks screen, render that instead
+  if (currentScreen === 'tasks') {
+    return (
+      <TasksScreen 
+        navigation={{ 
+          goBack: handleNavigateHome,
+          navigate: (screenName, params) => {
+            if (screenName === 'CreateTask') {
+              // For now, just show a coming soon alert
+              Alert.alert('Coming Soon', 'Task creation will be available soon!');
+            } else if (screenName === 'TaskDetail') {
+              // For now, just show a coming soon alert
+              Alert.alert('Coming Soon', 'Task details will be available soon!');
+            }
           }
         }}
       />

@@ -30,6 +30,7 @@ import {
 import Link from 'next/link';
 import ClientManagement from './ClientManagement';
 import ReportsScreen from './ReportsScreen';
+import TasksScreen from './TasksScreen';
 
 // Animated Counter Component
 function AnimatedCounter({ end, duration = 2000, suffix = "" }) {
@@ -129,6 +130,16 @@ export default function HomeScreen({ user, onLogout }) {
     return <ClientManagement user={user} onBack={() => setCurrentPage('dashboard')} />;
   }
 
+  // If we're on the tasks page, render that component
+  if (currentPage === 'tasks') {
+    return <TasksScreen user={user} onBack={() => setCurrentPage('dashboard')} showCreateTask={false} />;
+  }
+  
+  // If we're on the tasks page with create flag, show the create modal
+  if (currentPage === 'tasks?create=true') {
+    return <TasksScreen user={user} onBack={() => setCurrentPage('dashboard')} showCreateTask={true} />;
+  }
+
   // If we're on the reports page, render that component
   if (currentPage === 'reports') {
     return <ReportsScreen user={user} onBack={() => setCurrentPage('dashboard')} />;
@@ -202,6 +213,8 @@ export default function HomeScreen({ user, onLogout }) {
                       handleNavigateTo('dashboard');
                     } else if (item.page === 'reports') {
                       handleNavigateTo('reports');
+                    } else if (item.page === 'tasks') {
+                      handleNavigateTo('tasks');
                     } else {
                       handleComingSoon(item.label);
                     }
@@ -424,7 +437,7 @@ export default function HomeScreen({ user, onLogout }) {
                 </div>
                 <Button 
                   className="bg-gradient-to-r from-cyan-600 to-blue-600 hover:from-cyan-700 hover:to-blue-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 text-xs md:text-sm px-3 py-1 md:px-4 md:py-2 hover:scale-105"
-                  onClick={() => handleComingSoon('Tasks')}
+                  onClick={() => handleNavigateTo('tasks')}
                 >
                   View All
                 </Button>
@@ -482,7 +495,7 @@ export default function HomeScreen({ user, onLogout }) {
                 <Button
                   variant="outline"
                   className="w-full border-cyan-200 hover:bg-cyan-50 hover:text-cyan-700 hover:border-cyan-300 transition-all duration-300 text-sm hover:scale-105 hover:shadow-md"
-                  onClick={() => handleComingSoon('Add Task')}
+                  onClick={() => handleNavigateTo('tasks?create=true')}
                 >
                   <Plus className="mr-2 h-4 w-4 transition-transform duration-300 hover:rotate-90" />
                   Add New Task

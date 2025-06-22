@@ -1,7 +1,7 @@
 # Core FastAPI dependencies
 fastapi==0.104.1
 uvicorn[standard]==0.24.0
-pydantic==2.5.0
+pydantic==2.10.4
 python-multipart==0.0.6
 
 # Database
@@ -26,6 +26,12 @@ mutagen==1.47.0        # Audio metadata handling
 # Enhanced JSON and data validation
 jsonschema==4.20.0     # JSON schema validation for webhooks
 email-validator==2.1.0 # Email validation for Pydantic models
+
+# Google Calendar Integration
+google-api-python-client==2.108.0  # Google Calendar API
+google-auth==2.23.4                # Google authentication
+google-auth-oauthlib==1.1.0        # OAuth flow for Google
+google-auth-httplib2==0.2.0        # HTTP library for Google APIs
 
 # Utilities
 python-dotenv==1.0.0

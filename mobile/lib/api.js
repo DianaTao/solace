@@ -244,7 +244,7 @@ class APIService {
   // ===== TASKS =====
 
   /**
-   * Get tasks
+   * Get list of tasks with advanced filtering
    */
   async getTasks(params = {}) {
     const queryParams = new URLSearchParams();
@@ -252,21 +252,113 @@ class APIService {
     if (params.client_id) queryParams.append('client_id', params.client_id);
     if (params.status) queryParams.append('status', params.status);
     if (params.priority) queryParams.append('priority', params.priority);
-    if (params.skip) queryParams.append('skip', params.skip);
+    if (params.assigned_to) queryParams.append('assigned_to', params.assigned_to);
+    if (params.tags) queryParams.append('tags', Array.isArray(params.tags) ? params.tags.join(',') : params.tags);
+    if (params.due_date_from) queryParams.append('due_date_from', params.due_date_from);
+    if (params.due_date_to) queryParams.append('due_date_to', params.due_date_to);
     if (params.limit) queryParams.append('limit', params.limit);
+    if (params.offset) queryParams.append('offset', params.offset);
 
     const endpoint = `/api/tasks/${queryParams.toString() ? `?${queryParams.toString()}` : ''}`;
     return await this.makeRequest(endpoint);
   }
 
   /**
-   * Create task
+   * Get a specific task by ID
+   */
+  async getTask(taskId) {
+    return await this.makeRequest(`/api/tasks/${taskId}`);
+  }
+
+  /**
+   * Create new task
    */
   async createTask(taskData) {
     return await this.makeRequest('/api/tasks/', {
       method: 'POST',
       body: taskData,
     });
+  }
+
+  /**
+   * Update existing task
+   */
+  async updateTask(taskId, taskData) {
+    return await this.makeRequest(`/api/tasks/${taskId}`, {
+      method: 'PUT',
+      body: taskData,
+    });
+  }
+
+  /**
+   * Delete task
+   */
+  async deleteTask(taskId) {
+    return await this.makeRequest(`/api/tasks/${taskId}`, {
+      method: 'DELETE',
+    });
+  }
+
+  /**
+   * Mark task as completed
+   */
+  async completeTask(taskId) {
+    return await this.makeRequest(`/api/tasks/${taskId}/complete`, {
+      method: 'PATCH',
+    });
+  }
+
+  /**
+   * Get overdue tasks
+   */
+  async getOverdueTasks() {
+    return await this.makeRequest('/api/tasks/overdue');
+  }
+
+  /**
+   * Get tasks due today
+   */
+  async getTasksDueToday() {
+    return await this.makeRequest('/api/tasks/due-today');
+  }
+
+  /**
+   * Get upcoming tasks
+   */
+  async getUpcomingTasks(daysAhead = 7) {
+    return await this.makeRequest(`/api/tasks/upcoming?days_ahead=${daysAhead}`);
+  }
+
+  /**
+   * Get task statistics
+   */
+  async getTaskStats() {
+    return await this.makeRequest('/api/tasks/stats');
+  }
+
+  // ===== GOOGLE CALENDAR INTEGRATION =====
+
+  /**
+   * Get Google Calendar authorization URL
+   */
+  async getGoogleCalendarAuthUrl() {
+    return await this.makeRequest('/api/google-calendar/auth');
+  }
+
+  /**
+   * Disconnect Google Calendar integration
+   */
+  async disconnectGoogleCalendar() {
+    return await this.makeRequest('/api/google-calendar/disconnect', {
+      method: 'POST',
+    });
+  }
+
+  /**
+   * Get Google Calendar integration status
+   */
+  async getGoogleCalendarStatus() {
+    return await this.makeRequest('/api/google-calendar/status');
   }
 
   // ===== REPORTS =====
