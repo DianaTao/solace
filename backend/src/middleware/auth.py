@@ -5,6 +5,7 @@ Authentication middleware for JWT token validation
 import os
 import jwt
 import logging
+import os
 from fastapi import HTTPException, Depends, status
 from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
 from typing import Optional, Dict, Any
@@ -38,65 +39,72 @@ async def get_current_user(credentials: HTTPAuthorizationCredentials = Depends(s
         jwt_secret = os.getenv("SUPABASE_JWT_SECRET")
         logger.info(f"🔧 JWT Secret configured: {bool(jwt_secret and jwt_secret != 'your_supabase_jwt_secret_here')}")
         
-        if not jwt_secret or jwt_secret == "your_supabase_jwt_secret_here":
-            logger.warning("⚠️ SUPABASE_JWT_SECRET not configured, using Supabase client validation")
+        # Always try Supabase client validation first (more reliable)
+        logger.warning("🔄 Using Supabase client validation (preferred method)")
+        try:
+            logger.info("🔄 Attempting Supabase client validation")
+            supabase = get_supabase()
+            logger.info("✅ Supabase client retrieved successfully")
             
-            # Alternative: Try to validate using Supabase client directly
-            try:
-                logger.info("🔄 Attempting Supabase client validation")
-                supabase = get_supabase()
-                logger.info("✅ Supabase client retrieved successfully")
+            # Use Supabase to verify the token by making a simple authenticated request
+            logger.info("🔍 Attempting to get user from token")
+            user_response = supabase.auth.get_user(token)
+            logger.info(f"📊 User response: {bool(user_response)} | User: {bool(user_response.user if hasattr(user_response, 'user') else False)}")
+            
+            if hasattr(user_response, 'user') and user_response.user:
+                user_id = user_response.user.id
+                email = user_response.user.email
+                logger.info(f"👤 User validated - ID: {user_id}, Email: {email}")
                 
-                # Use Supabase to verify the token by making a simple authenticated request
-                logger.info("🔍 Attempting to get user from token")
-                user_response = supabase.auth.get_user(token)
-                logger.info(f"📊 User response: {bool(user_response)} | User: {bool(user_response.user if hasattr(user_response, 'user') else False)}")
+                # Get user profile from database
+                logger.info("🔍 Fetching user profile from database")
+                result = supabase.table("profiles").select("*").eq("id", user_id).execute()
+                logger.info(f"📊 Profile query result: {len(result.data) if result.data else 0} records found")
                 
-                if hasattr(user_response, 'user') and user_response.user:
-                    user_id = user_response.user.id
-                    email = user_response.user.email
-                    logger.info(f"👤 User validated - ID: {user_id}, Email: {email}")
-                    
-                    # Get user profile from database
-                    logger.info("🔍 Fetching user profile from database")
-                    result = supabase.table("profiles").select("*").eq("id", user_id).execute()
-                    logger.info(f"📊 Profile query result: {len(result.data) if result.data else 0} records found")
-                    
-                    user_profile = {}
-                    if result.data:
-                        user_profile = result.data[0]
-                        logger.info(f"👤 Profile loaded: {user_profile.get('name', 'No name')}")
-                    else:
-                        logger.warning(f"⚠️ No profile found for user {user_id}, creating default profile")
-                        user_profile = {
-                            "name": email.split("@")[0],
-                            "role": "social_worker"
-                        }
-                    
-                    # Return user information
-                    user_info = {
-                        "id": user_id,
-                        "email": email,
-                        "name": user_profile.get("name", email.split("@")[0]),
-                        "role": user_profile.get("role", "social_worker"),
-                        "token_payload": {"sub": user_id, "email": email}
-                    }
-                    logger.info(f"✅ Authentication successful for user: {email}")
-                    return user_info
+                user_profile = {}
+                if result.data:
+                    user_profile = result.data[0]
+                    logger.info(f"👤 Profile loaded: {user_profile.get('name', 'No name')}")
                 else:
-                    logger.error("❌ Supabase user validation failed - no user in response")
-                    raise HTTPException(
-                        status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Invalid token - user not found"
-                    )
-                    
-            except Exception as supabase_error:
-                logger.error(f"❌ Supabase token validation failed: {type(supabase_error).__name__}: {supabase_error}")
-                logger.error(f"❌ Full error details: {str(supabase_error)}")
+                    logger.warning(f"⚠️ No profile found for user {user_id}, creating default profile")
+                    user_profile = {
+                        "name": email.split("@")[0],
+                        "role": "social_worker"
+                    }
+                
+                # Return user information
+                user_info = {
+                    "id": user_id,
+                    "email": email,
+                    "name": user_profile.get("name", email.split("@")[0]),
+                    "role": user_profile.get("role", "social_worker"),
+                    "token_payload": {"sub": user_id, "email": email}
+                }
+                logger.info(f"✅ Authentication successful for user: {email}")
+                return user_info
+            else:
+                logger.error("❌ Supabase user validation failed - no user in response")
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail=f"Authentication failed: {str(supabase_error)}"
+                    detail="Invalid token - user not found"
                 )
+                
+        except HTTPException:
+            raise
+        except Exception as supabase_error:
+            logger.error(f"❌ Supabase token validation failed: {type(supabase_error).__name__}: {supabase_error}")
+            logger.error(f"❌ Full error details: {str(supabase_error)}")
+            # Fall back to JWT validation if Supabase validation fails
+            logger.warning("🔄 Falling back to JWT secret validation")
+        
+        # Fallback: JWT validation (only if Supabase validation fails)
+        if not jwt_secret or jwt_secret == "your_supabase_jwt_secret_here":
+            logger.error("❌ JWT Secret not configured and Supabase validation failed")
+            raise HTTPException(
+                status_code=status.HTTP_401_UNAUTHORIZED,
+                detail="Authentication failed: No valid authentication method available"
+            )
+            
         
         # Original JWT validation code (when JWT secret is properly configured)
         logger.info("🔐 Using JWT secret validation")
