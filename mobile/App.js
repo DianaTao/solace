@@ -234,6 +234,40 @@ export default function App() {
     setName('');
   };
 
+  const handleFixProfile = async () => {
+    console.log('🔧 Attempting to fix missing user profile...');
+    setIsLoading(true);
+    
+    try {
+      const fixedProfile = await AuthService.createProfileForCurrentUser();
+      
+      if (fixedProfile) {
+        console.log('✅ Profile fixed successfully:', fixedProfile);
+        setUser(fixedProfile);
+        Alert.alert(
+          '✅ Profile Fixed!', 
+          `Your database profile has been created successfully!\n\nName: ${fixedProfile.name}\nEmail: ${fixedProfile.email}`,
+          [{ text: 'Great!', style: 'default' }]
+        );
+      } else {
+        Alert.alert(
+          'ℹ️ No Action Needed', 
+          'You either already have a profile or are not logged in. Please sign in first if you haven\'t already.',
+          [{ text: 'OK', style: 'default' }]
+        );
+      }
+    } catch (error) {
+      console.error('❌ Profile fix failed:', error.message);
+      Alert.alert(
+        '❌ Profile Fix Failed', 
+        `Could not create your database profile: ${error.message}\n\nPlease try signing in again or contact support.`,
+        [{ text: 'OK', style: 'cancel' }]
+      );
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <SafeAreaView style={styles.container}>
       <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
@@ -371,6 +405,25 @@ export default function App() {
                   activeOpacity={0.8}
                 >
                   <Text style={styles.loginButtonText}>🚪 Sign Out</Text>
+                </TouchableOpacity>
+              </LinearGradient>
+            )}
+
+            {/* Fix Profile Button - Show when no user or user doesn't have full profile */}
+            {(!user || !user.name || user.name === 'User') && (
+              <LinearGradient
+                colors={['#f59e0b', '#d97706']}
+                style={[styles.loginButton, { marginTop: 8 }]}
+              >
+                <TouchableOpacity 
+                  style={styles.loginButtonInner}
+                  onPress={handleFixProfile}
+                  activeOpacity={0.8}
+                  disabled={isLoading}
+                >
+                  <Text style={styles.loginButtonText}>
+                    {isLoading ? '⏳ Fixing Profile...' : '🔧 Fix Database Profile'}
+                  </Text>
                 </TouchableOpacity>
               </LinearGradient>
             )}

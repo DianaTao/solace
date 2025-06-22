@@ -1,51 +1,107 @@
-# SOLACE Setup Guide
+# SOLACE - Quick Setup Guide
+
+This guide will help you get SOLACE up and running quickly with the new organized structure.
+
+## 📁 Project Structure
+
+```
+solace/
+├── 📱 mobile/          # React Native mobile app
+├── 🌐 web/             # Next.js web application  
+├── 🗄️ backend/         # Database setup and configuration
+├── 📚 README.md        # Main project documentation
+└── 📋 SETUP.md         # This quick setup guide
+```
+
+## Prerequisites
+
+- Node.js 18+ and npm
+- Expo CLI (for mobile development)
+- Supabase account
 
 ## 🚀 Quick Start
 
-Your SOLACE application is built and ready to run!
-
-## ✅ What's Been Built
-
-- ✅ Next.js 15 with TypeScript and Tailwind CSS
-- ✅ Voice recording with mock AI processing
-- ✅ Dashboard with case statistics
-- ✅ Client management interface
-- ✅ Authentication system
-- ✅ Mobile-responsive design
-- ✅ Development server running on port 3000
-
-## 🌐 Access the Application
-
-**Open your browser and go to:** http://localhost:3000
-
-**Demo Login Credentials:**
-- Email: `demo@solace.app`
-- Password: `demo123`
-
-## 🎯 Features You Can Test Now
-
-1. **Login Page** - Use demo credentials
-2. **Dashboard** - View case statistics and recent activity
-3. **Voice Recording** - Record and transcribe speech (mock AI)
-4. **Client List** - Browse client cases
-5. **Mobile Navigation** - Test on different screen sizes
-
-## 🔧 Optional: Environment Setup
-
-Create `.env.local` for real API integration:
-
-```env
-NEXT_PUBLIC_SUPABASE_URL=your_supabase_url
-NEXT_PUBLIC_SUPABASE_ANON_KEY=your_supabase_key
-ANTHROPIC_API_KEY=your_claude_key
-GOOGLE_AI_API_KEY=your_gemini_key
-VAPI_PUBLIC_KEY=your_vapi_key
+### 1. Database Setup (First!)
+```bash
+cd backend
+# Follow backend/README.md for Supabase setup
+# Run setup-database.sql in Supabase SQL Editor
 ```
 
-## 🚀 Production Deployment
+### 2. Web Application
+```bash
+cd web
+npm install
+npm run dev
+# Visit http://localhost:3000
+```
 
-1. **Build**: `npm run build`
-2. **Deploy to Vercel**: Connect GitHub repo
-3. **Set environment variables** in Vercel dashboard
+### 3. Mobile Application
+```bash
+cd mobile
+npm install
+npx expo start
+# Use Expo Go app or simulator
+```
 
-**Your SOLACE app is ready! 🎉** 
+## 🔧 Configuration
+
+### Database (Required)
+1. Create Supabase project at [supabase.com](https://supabase.com)
+2. Run `backend/setup-database.sql` in SQL Editor
+3. Note your project URL and API key
+
+### Web App
+- Uses hardcoded Supabase config (no env vars needed)
+- Configured in `web/src/lib/supabase.js`
+
+### Mobile App
+- Uses hardcoded Supabase config
+- Configured in `mobile/lib/supabase.js`
+
+## 📱 Demo Credentials
+
+For testing both web and mobile apps:
+- **Email**: `demo@solace.app`
+- **Password**: `demo123`
+
+## 🐛 Troubleshooting
+
+### Database Issues
+```bash
+cd backend
+# Run database-fix.sql if user profiles aren't being created
+```
+
+### Web App Issues
+```bash
+cd web
+rm -rf .next node_modules
+npm install
+npm run dev
+```
+
+### Mobile App Issues
+```bash
+cd mobile
+rm -rf node_modules
+npm install
+npx expo start --clear
+```
+
+## 📚 Detailed Documentation
+
+- **Main Overview**: `README.md`
+- **Web App**: `web/README.md`
+- **Mobile App**: `mobile/README.md`
+- **Backend/Database**: `backend/README.md`
+
+## 🔗 Development URLs
+
+- **Web App**: http://localhost:3000
+- **Mobile App**: Expo DevTools (varies)
+- **Supabase**: https://ccotkrhrqkldgfdjnlea.supabase.co
+
+---
+
+**Choose your development focus and dive into the specific folder documentation!** 

@@ -1,7 +1,8 @@
+# SOLACE Project - Organized Structure
 # See https://help.github.com/articles/ignoring-files/ for more about ignoring files.
 
-# dependencies
-/node_modules
+# Dependencies
+node_modules/
 /.pnp
 .pnp.*
 .yarn/*
@@ -10,32 +11,84 @@
 !.yarn/releases
 !.yarn/versions
 
-# testing
-/coverage
-
-# next.js
+# Build outputs
 /.next/
 /out/
-
-# production
 /build
+/dist
+*.tsbuildinfo
 
-# misc
-.DS_Store
-*.pem
+# Environment files
+.env*
 
-# debug
+# Runtime files
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 .pnpm-debug.log*
 
-# env files (can opt-in for committing if needed)
-.env*
+# Testing
+/coverage
 
-# vercel
+# IDE and editor files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.pem
+
+# Vercel
 .vercel
 
-# typescript
-*.tsbuildinfo
+# TypeScript
 next-env.d.ts
+
+# Expo (Mobile App)
+mobile/.expo/
+mobile/dist/
+mobile/web-build/
+
+# React Native
+mobile/ios/build/
+mobile/android/build/
+mobile/android/app/build/
+
+# Temporary files
+*.tmp
+*.temp
+
+# Database files (if any local)
+*.db
+*.sqlite
+
+# Logs
+logs
+*.log
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Optional npm cache directory
+.npm
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity

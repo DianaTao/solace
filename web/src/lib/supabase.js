@@ -1,7 +1,14 @@
 import { createClient } from '@supabase/supabase-js';
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || 'https://your-project.supabase.co';
-const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY || 'your-anon-key';
+// Hardcoded Supabase configuration (matching mobile app)
+const supabaseUrl = 'https://ccotkrhrqkldgfdjnlea.supabase.co';
+const supabaseAnonKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImNjb3RrcmhycWtsZGdmZGpubGVhIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NTA0ODM4MDgsImV4cCI6MjA2NjA1OTgwOH0.-Q3LvNkbaNvfjnEoKwY53BNLPVIEvxoDzRD9z3-5NO0';
+
+// Debug logging
+console.log('🔧 Web Supabase config:', { 
+  url: supabaseUrl, 
+  keyLength: supabaseAnonKey?.length
+});
 
 export const supabase = createClient(supabaseUrl, supabaseAnonKey, {
   auth: {

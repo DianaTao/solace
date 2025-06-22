@@ -1,6 +1,20 @@
 import { supabase, TABLES } from './supabase';
 
 export class AuthService {
+  // Safe wrapper for Supabase auth operations
+  static async safeAuthOperation(operation, operationName) {
+    try {
+      return await operation();
+    } catch (error) {
+      // Handle AuthSessionMissingError gracefully
+      if (error.message && error.message.includes('Auth session missing')) {
+        console.log(`ℹ️ ${operationName}: No auth session (user not logged in)`);
+        return null;
+      }
+      // Re-throw other errors
+      throw error;
+    }
+  }
   // Sign in with email and password
   static async signIn(credentials) {
     try {
@@ -49,20 +63,7 @@ export class AuthService {
     try {
       console.log('📝 Attempting Supabase signup with:', email);
       
-      // First, check if user already exists in our users table
-      const existingUser = await this.checkUserExists(email);
-      if (existingUser) {
-        console.log('👤 User already exists in database:', email);
-        throw new Error('User already registered');
-      }
-
-      // Also check if user exists in Supabase auth (in case they're in auth but not in our users table)
-      const existingAuthUser = await this.checkAuthUserExists(email);
-      if (existingAuthUser) {
-        console.log('👤 User already exists in auth system:', email);
-        throw new Error('User already registered');
-      }
-      
+      // Directly attempt signup - let Supabase handle duplicate email checking
       const { data, error } = await supabase.auth.signUp({
         email,
         password,
@@ -73,17 +74,47 @@ export class AuthService {
 
       if (error) {
         console.error('❌ Supabase signup error:', error.message);
+        
+        // Handle specific error cases
+        if (error.message.includes('already registered') || 
+            error.message.includes('already exists') ||
+            error.message.includes('User already registered')) {
+          console.log('👤 User already exists in auth system:', email);
+          throw new Error('User already registered');
+        }
+        
         throw error;
       }
 
       console.log('✅ Supabase signup successful');
+      console.log('📊 Signup data:', {
+        userCreated: !!data.user,
+        userEmail: data.user?.email,
+        sessionExists: !!data.session,
+        needsConfirmation: !data.session && !!data.user
+      });
 
-      // Create user profile
+      // Create user profile - with enhanced error handling
       if (data.user) {
-        await this.createUserProfile(data.user.id, {
-          email,
-          ...userData,
-        });
+        try {
+          console.log('📝 Creating user profile in database for:', email);
+          const profileData = await this.createUserProfile(data.user.id, {
+            email,
+            ...userData,
+          });
+          console.log('✅ User profile created successfully:', profileData);
+        } catch (profileError) {
+          console.error('❌ Failed to create user profile:', profileError);
+          
+          // If it's an RLS policy error, the user was created in auth but not in our table
+          if (profileError.message.includes('row-level security policy')) {
+            console.log('⚠️ User created in auth but profile creation blocked by RLS policy');
+            // We'll still return the auth data - the profile can be created later
+          } else {
+            // For other database errors, we might want to clean up the auth user
+            console.error('💥 Database error during profile creation:', profileError.message);
+          }
+        }
       }
 
       return data;
@@ -108,21 +139,35 @@ export class AuthService {
 
   // Get current session
   static async getCurrentSession() {
-    try {
+    return await this.safeAuthOperation(async () => {
       const { data: { session }, error } = await supabase.auth.getSession();
-      if (error) throw error;
+      
+      // Handle AuthSessionMissingError gracefully
+      if (error) {
+        if (error.message.includes('Auth session missing')) {
+          console.log('ℹ️ No session found (user not logged in)');
+          return null;
+        }
+        throw error;
+      }
+      
       return session;
-    } catch (error) {
-      console.error('Get session error:', error);
-      return null;
-    }
+    }, 'getCurrentSession');
   }
 
   // Get current user
   static async getCurrentUser() {
-    try {
+    return await this.safeAuthOperation(async () => {
       const { data: { user }, error } = await supabase.auth.getUser();
-      if (error) throw error;
+      
+      // Handle AuthSessionMissingError gracefully
+      if (error) {
+        if (error.message.includes('Auth session missing')) {
+          console.log('ℹ️ No auth session found (user not logged in)');
+          return null;
+        }
+        throw error;
+      }
       
       if (user) {
         let profile = await this.getUserProfile(user.id);
@@ -143,10 +188,7 @@ export class AuthService {
       }
       
       return null;
-    } catch (error) {
-      console.error('Get current user error:', error);
-      return null;
-    }
+    }, 'getCurrentUser');
   }
 
   // Get user profile from database
@@ -184,23 +226,40 @@ export class AuthService {
   // Create user profile in database
   static async createUserProfile(userId, userData) {
     try {
+      console.log('🔍 Attempting to insert user profile:', {
+        id: userId,
+        email: userData.email,
+        name: userData.name,
+        role: userData.role || 'social_worker'
+      });
+
+      const profileData = {
+        id: userId,
+        name: userData.name || '',
+        email: userData.email || '',
+        agency: userData.agency || '',
+        role: userData.role || 'social_worker',
+        created_at: new Date().toISOString(),
+        updated_at: new Date().toISOString(),
+      };
+
       const { data, error } = await supabase
         .from(TABLES.USERS)
-        .insert([
-          {
-            id: userId,
-            name: userData.name || '',
-            email: userData.email || '',
-            agency: userData.agency || '',
-            role: userData.role || 'social_worker',
-            created_at: new Date().toISOString(),
-            updated_at: new Date().toISOString(),
-          },
-        ])
+        .insert([profileData])
         .select()
         .single();
 
-      if (error) throw error;
+      if (error) {
+        console.error('❌ Database insert error:', {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint
+        });
+        throw error;
+      }
+
+      console.log('✅ User profile inserted successfully:', data);
       return data;
     } catch (error) {
       console.error('Create user profile error:', error);
@@ -276,33 +335,40 @@ export class AuthService {
     }
   }
 
-  // Check if user already exists in Supabase auth system
-  static async checkAuthUserExists(email) {
-    try {
-      // Try to sign in with a dummy password to check if user exists
-      // This is a workaround since Supabase doesn't provide a direct way to check user existence
-      const { error } = await supabase.auth.signInWithPassword({
-        email,
-        password: 'dummy-password-check-12345'
-      });
+  // REMOVED: checkAuthUserExists function was causing false positives
+  // Now letting Supabase handle duplicate email detection directly
 
-      // If error is "Invalid login credentials", user exists but password is wrong
-      // If error is "User not found" or similar, user doesn't exist
-      if (error) {
-        if (error.message.includes('Invalid login credentials') || 
-            error.message.includes('Invalid email or password')) {
-          console.log('🔍 User exists in auth system but password check failed (expected)');
-          return true; // User exists
-        }
-        // User doesn't exist or other error
-        return false;
+  // Utility method to create profile for existing auth users
+  static async createProfileForCurrentUser() {
+    try {
+      const { data: { user }, error } = await supabase.auth.getUser();
+      
+      if (error || !user) {
+        console.log('❌ No authenticated user found');
+        return null;
       }
 
-      // If no error, user exists and password was correct (shouldn't happen with dummy password)
-      return true;
+      console.log('🔍 Creating profile for authenticated user:', user.email);
+      
+      // Check if profile already exists
+      const existingProfile = await this.getUserProfile(user.id);
+      if (existingProfile) {
+        console.log('✅ User profile already exists');
+        return existingProfile;
+      }
+
+      // Create new profile
+      const newProfile = await this.createUserProfile(user.id, {
+        email: user.email,
+        name: user.user_metadata?.name || user.email.split('@')[0],
+        role: 'social_worker'
+      });
+
+      console.log('✅ Profile created for existing user:', newProfile);
+      return newProfile;
     } catch (error) {
-      console.error('Check auth user exists error:', error);
-      return false;
+      console.error('❌ Error creating profile for current user:', error);
+      throw error;
     }
   }
 
