@@ -6,7 +6,7 @@ from fastapi import APIRouter, Depends, HTTPException, status, Query, Body
 from typing import Dict, Any, List, Optional
 from middleware.auth import get_current_user
 from services.case_notes_service import CaseNotesService
-from services.vapi_service import vapi_service
+from services.voice_service import voice_service
 
 router = APIRouter()
 
@@ -192,7 +192,7 @@ async def check_voice_service_health(
 ):
     """Check the health of voice integration services"""
     try:
-        health_status = await vapi_service.health_check()
+        health_status = await voice_service.health_check()
         
         return {
             "message": "Voice service health check completed",

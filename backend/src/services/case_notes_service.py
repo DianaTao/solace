@@ -7,7 +7,7 @@ import uuid
 from datetime import datetime, timedelta
 from typing import List, Optional, Dict, Any
 from config.database import get_supabase
-from services.vapi_service import vapi_service
+from services.voice_service import voice_service
 
 logger = logging.getLogger(__name__)
 
@@ -96,8 +96,8 @@ class CaseNotesService:
     ) -> Dict[str, Any]:
         """Start a voice intake session for case notes"""
         try:
-            # Start voice session with Vapi
-            voice_response = await vapi_service.start_voice_intake(
+            # Start voice session with OpenAI Whisper
+            voice_response = await voice_service.start_voice_intake(
                 client_id=client_id,
                 social_worker_id=user_id,
                 session_type=session_type,
@@ -124,8 +124,8 @@ class CaseNotesService:
             # Mock case note content for TTS
             mock_content = f"Case note {note_id} content for TTS generation."
             
-            # Generate TTS using Vapi service
-            tts_response = await vapi_service.generate_tts(
+            # Generate TTS using voice service
+            tts_response = await voice_service.generate_tts(
                 case_note_id=note_id,
                 text_content=mock_content,
                 voice_id=voice_id,
