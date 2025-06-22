@@ -1,6 +1,6 @@
 import { createClient } from '@supabase/supabase-js';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { config } from '../config/env';
+import config from '../config/env';
 
 // Supabase configuration - Use environment-specific configuration
 const isDev = __DEV__;

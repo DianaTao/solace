@@ -1,20 +1,11 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  StyleSheet, 
-  Text, 
-  View, 
-  TextInput, 
-  TouchableOpacity, 
-  Alert, 
-  StatusBar,
-  ScrollView,
-  SafeAreaView
-} from 'react-native';
+import { Alert } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { LinearGradient } from 'expo-linear-gradient';
 import { AuthService } from './lib/auth';
 import HomeScreen from './screens/HomeScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
+import LoginScreen from './screens/LoginScreen';
+import SignupScreen from './screens/SignupScreen';
 
 export default function App() {
   const [email, setEmail] = useState('');
@@ -303,410 +294,36 @@ export default function App() {
     return <HomeScreen user={user} onLogout={handleLogout} />;
   }
 
-  // Otherwise show login/signup form
-  return (
-    <SafeAreaView style={styles.container}>
-      <StatusBar barStyle="dark-content" backgroundColor="#f8fafc" />
-      <LinearGradient
-        colors={['#eff6ff', '#ffffff', '#eff6ff']}
-        style={styles.gradient}
-      >
-        <ScrollView contentContainerStyle={styles.scrollContainer}>
-          
-          {/* Header */}
-          <View style={styles.header}>
-            <View style={styles.logo}>
-              <Text style={styles.logoText}>S</Text>
-            </View>
-            <Text style={styles.title}>Welcome to SOLACE</Text>
-            <Text style={styles.subtitle}>
-              📱 {isSignUpMode ? 'Create Your Account' : 'Mobile-Ready Social Work Assistant'}
-            </Text>
-            
-            {/* Status Badges - Matching Web App */}
-            <View style={styles.badgeContainer}>
-              <View style={[styles.badge, styles.badgeGreen]}>
-                <Text style={styles.badgeTextGreen}>✅ JavaScript</Text>
-              </View>
-              <View style={[styles.badge, styles.badgeBlue]}>
-                <Text style={styles.badgeTextBlue}>📱 PWA Ready</Text>
-              </View>
-              <View style={[styles.badge, styles.badgePurple]}>
-                <Text style={styles.badgeTextPurple}>📡 Responsive</Text>
-              </View>
-            </View>
-          </View>
-
-          {/* Login/Signup Form */}
-          <View style={styles.form}>
-            {/* Name field - only show in signup mode */}
-            {isSignUpMode && (
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>👤 Full Name</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Enter your full name"
-                  placeholderTextColor="#9ca3af"
-                  value={name}
-                  onChangeText={setName}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                />
-              </View>
-            )}
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>📧 Email Address</Text>
-              <TextInput
-                style={styles.input}
-                placeholder="Enter your email"
-                placeholderTextColor="#9ca3af"
-                value={email}
-                onChangeText={setEmail}
-                keyboardType="email-address"
-                autoCapitalize="none"
-                autoCorrect={false}
-              />
-            </View>
-
-            <View style={styles.inputGroup}>
-              <Text style={styles.label}>🔒 Password</Text>
-              <TextInput
-                style={styles.input}
-                placeholder={isSignUpMode ? "Create a password (min 6 characters)" : "Enter your password"}
-                placeholderTextColor="#9ca3af"
-                value={password}
-                onChangeText={setPassword}
-                secureTextEntry
-              />
-            </View>
-
-            {/* Confirm Password field - only show in signup mode */}
-            {isSignUpMode && (
-              <View style={styles.inputGroup}>
-                <Text style={styles.label}>🔒 Confirm Password</Text>
-                <TextInput
-                  style={styles.input}
-                  placeholder="Confirm your password"
-                  placeholderTextColor="#9ca3af"
-                  value={confirmPassword}
-                  onChangeText={setConfirmPassword}
-                  secureTextEntry
-                />
-              </View>
-            )}
-
-            <LinearGradient
-              colors={['#2563eb', '#1d4ed8']}
-              style={styles.loginButton}
-            >
-              <TouchableOpacity 
-                style={styles.loginButtonInner}
-                onPress={isSignUpMode ? handleSignUp : handleLogin}
-                activeOpacity={0.8}
-                disabled={isLoading}
-              >
-                <Text style={styles.loginButtonText}>
-                  {isLoading 
-                    ? (isSignUpMode ? '⏳ Creating Account...' : '⏳ Signing In...')
-                    : (isSignUpMode ? '📝 Create Account' : '📱 Sign In to Mobile')
-                  }
-                </Text>
-              </TouchableOpacity>
-            </LinearGradient>
-
-            {/* Mode Toggle Button */}
-            <TouchableOpacity 
-              style={styles.toggleButton}
-              onPress={toggleMode}
-              activeOpacity={0.7}
-            >
-              <Text style={styles.toggleButtonText}>
-                {isSignUpMode 
-                  ? '👤 Already have an account? Sign In' 
-                  : '📝 Don\'t have an account? Sign Up'
-                }
-              </Text>
-            </TouchableOpacity>
-
-            {/* Logout Button - Show only when user is logged in */}
-            {user && (
-              <LinearGradient
-                colors={['#dc2626', '#b91c1c']}
-                style={[styles.loginButton, { marginTop: 8 }]}
-              >
-                <TouchableOpacity 
-                  style={styles.loginButtonInner}
-                  onPress={handleLogout}
-                  activeOpacity={0.8}
-                >
-                  <Text style={styles.loginButtonText}>🚪 Sign Out</Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            )}
-
-            {/* Fix Profile Button - Show when no user or user doesn't have full profile */}
-            {(!user || !user.name || user.name === 'User') && (
-              <LinearGradient
-                colors={['#f59e0b', '#d97706']}
-                style={[styles.loginButton, { marginTop: 8 }]}
-              >
-                <TouchableOpacity 
-                  style={styles.loginButtonInner}
-                  onPress={handleFixProfile}
-                  activeOpacity={0.8}
-                  disabled={isLoading}
-                >
-                  <Text style={styles.loginButtonText}>
-                    {isLoading ? '⏳ Fixing Profile...' : '🔧 Fix Database Profile'}
-                  </Text>
-                </TouchableOpacity>
-              </LinearGradient>
-            )}
-
-            {/* User Status - Show when logged in */}
-            {user ? (
-              <LinearGradient
-                colors={['#dcfce7', '#bbf7d0']}
-                style={styles.demoCard}
-              >
-                <Text style={styles.demoTitle}>✅ Logged In:</Text>
-                <Text style={styles.demoText}><Text style={styles.demoBold}>Name:</Text> {user.name || 'N/A'}</Text>
-                <Text style={styles.demoText}><Text style={styles.demoBold}>Email:</Text> {user.email}</Text>
-                <Text style={styles.demoText}><Text style={styles.demoBold}>Role:</Text> {user.role || 'N/A'}</Text>
-              </LinearGradient>
-            ) : (
-              /* Demo Credentials - Show when not logged in */
-              <LinearGradient
-                colors={['#eff6ff', '#e0f2fe']}
-                style={styles.demoCard}
-              >
-                {isSignUpMode ? (
-                  <>
-                    <Text style={styles.demoTitle}>📝 Sign Up Instructions:</Text>
-                    <Text style={styles.demoText}>• Fill in your name, email, and password</Text>
-                    <Text style={styles.demoText}>• Password must be at least 6 characters</Text>
-                    <Text style={styles.demoText}>• Check your email for confirmation link</Text>
-                    <Text style={styles.demoText}>• Return here to sign in after confirmation</Text>
-                  </>
-                ) : (
-                  <>
-                    <Text style={styles.demoTitle}>🎯 Demo Credentials:</Text>
-                    <Text style={styles.demoText}><Text style={styles.demoBold}>Email:</Text> demo@solace.app</Text>
-                    <Text style={styles.demoText}><Text style={styles.demoBold}>Password:</Text> demo123</Text>
-                    <Text style={styles.demoText}><Text style={styles.demoBold}>Or create your own account!</Text></Text>
-                  </>
-                )}
-              </LinearGradient>
-            )}
-          </View>
-
-          {/* Footer */}
-          <View style={styles.footer}>
-            <Text style={styles.footerText}>SOLACE - Social Work Operations Assistant</Text>
-            <Text style={styles.footerSubtext}>🌍 Empowering social workers in the San Francisco Bay Area</Text>
-            <View style={styles.footerFeatures}>
-              <Text style={styles.featureText}>📱 Mobile Optimized</Text>
-              <Text style={styles.featureText}>🔒 Secure</Text>
-              <Text style={styles.featureText}>⚡ Fast</Text>
-            </View>
-          </View>
-
-        </ScrollView>
-      </LinearGradient>
-    </SafeAreaView>
-  );
+  // Otherwise show artistic login/signup screens
+  if (isSignUpMode) {
+    return (
+      <SignupScreen 
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        confirmPassword={confirmPassword}
+        setConfirmPassword={setConfirmPassword}
+        name={name}
+        setName={setName}
+        isLoading={isLoading}
+        onSignup={handleSignUp}
+        onSwitchToLogin={() => setIsSignUpMode(false)}
+      />
+    );
+  } else {
+    return (
+      <LoginScreen 
+        email={email}
+        setEmail={setEmail}
+        password={password}
+        setPassword={setPassword}
+        isLoading={isLoading}
+        onLogin={handleLogin}
+        onSwitchToSignup={() => setIsSignUpMode(true)}
+      />
+    );
+  }
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f8fafc',
-  },
-  gradient: {
-    flex: 1,
-  },
-  scrollContainer: {
-    flexGrow: 1,
-    justifyContent: 'center',
-    paddingHorizontal: 20,
-    paddingVertical: 24,
-  },
-  header: {
-    alignItems: 'center',
-    marginBottom: 40,
-  },
-  logo: {
-    width: 64,
-    height: 64,
-    borderRadius: 32,
-    backgroundColor: '#dbeafe',
-    justifyContent: 'center',
-    alignItems: 'center',
-    marginBottom: 16,
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.1,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  logoText: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#2563eb',
-  },
-  title: {
-    fontSize: 32,
-    fontWeight: 'bold',
-    color: '#111827',
-    marginBottom: 8,
-    textAlign: 'center',
-    letterSpacing: -0.5,
-  },
-  subtitle: {
-    fontSize: 14,
-    color: '#6b7280',
-    marginBottom: 16,
-    textAlign: 'center',
-  },
-  badgeContainer: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  badge: {
-    paddingHorizontal: 8,
-    paddingVertical: 4,
-    borderRadius: 20,
-    marginHorizontal: 4,
-    marginVertical: 2,
-  },
-  badgeGreen: {
-    backgroundColor: '#dcfce7',
-  },
-  badgeBlue: {
-    backgroundColor: '#dbeafe',
-  },
-  badgePurple: {
-    backgroundColor: '#f3e8ff',
-  },
-  badgeTextGreen: {
-    color: '#166534',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  badgeTextBlue: {
-    color: '#1d4ed8',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  badgeTextPurple: {
-    color: '#7c3aed',
-    fontSize: 12,
-    fontWeight: '600',
-  },
-  form: {
-    marginBottom: 24,
-  },
-  inputGroup: {
-    marginBottom: 16,
-  },
-  label: {
-    fontSize: 14,
-    fontWeight: '500',
-    color: '#374151',
-    marginBottom: 4,
-  },
-  input: {
-    backgroundColor: 'white',
-    borderWidth: 1,
-    borderColor: '#d1d5db',
-    borderRadius: 12,
-    paddingHorizontal: 16,
-    paddingVertical: 12,
-    fontSize: 16,
-    color: '#111827',
-    shadowColor: '#000',
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.05,
-    shadowRadius: 2,
-    elevation: 1,
-  },
-  loginButton: {
-    borderRadius: 12,
-    marginBottom: 16,
-    shadowColor: '#2563eb',
-    shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.25,
-    shadowRadius: 8,
-    elevation: 4,
-  },
-  loginButtonInner: {
-    paddingVertical: 12,
-    alignItems: 'center',
-    borderRadius: 12,
-  },
-  loginButtonText: {
-    color: 'white',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-  toggleButton: {
-    paddingVertical: 12,
-    paddingHorizontal: 16,
-    marginTop: 8,
-    alignItems: 'center',
-  },
-  toggleButtonText: {
-    color: '#2563eb',
-    fontSize: 14,
-    fontWeight: '500',
-    textAlign: 'center',
-  },
-  demoCard: {
-    borderWidth: 1,
-    borderColor: '#bfdbfe',
-    borderRadius: 12,
-    padding: 16,
-  },
-  demoTitle: {
-    fontSize: 14,
-    fontWeight: '600',
-    color: '#1d4ed8',
-    marginBottom: 8,
-  },
-  demoText: {
-    fontSize: 12,
-    color: '#1e40af',
-    marginBottom: 2,
-  },
-  demoBold: {
-    fontWeight: '600',
-  },
-  footer: {
-    alignItems: 'center',
-    paddingTop: 16,
-  },
-  footerText: {
-    fontSize: 12,
-    color: '#6b7280',
-    textAlign: 'center',
-    marginBottom: 4,
-  },
-  footerSubtext: {
-    fontSize: 12,
-    color: '#9ca3af',
-    textAlign: 'center',
-    marginBottom: 12,
-  },
-  footerFeatures: {
-    flexDirection: 'row',
-    justifyContent: 'center',
-  },
-  featureText: {
-    fontSize: 12,
-    color: '#6b7280',
-    marginHorizontal: 8,
-  },
-}); 
+// Styles removed - now using separate artistic screens 
