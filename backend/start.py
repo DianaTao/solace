@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 """
 SOLACE Backend Startup Script
-Quick start script for development and production
 """
 
 import os
