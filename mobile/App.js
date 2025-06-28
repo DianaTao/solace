@@ -6,7 +6,6 @@ import HomeScreen from './screens/HomeScreen';
 import WelcomeScreen from './screens/WelcomeScreen';
 import LoginScreen from './screens/LoginScreen';
 import SignupScreen from './screens/SignupScreen';
-import APITestScreen from './screens/APITestScreen';
 
 export default function App() {
   const [email, setEmail] = useState('');
@@ -17,7 +16,6 @@ export default function App() {
   const [user, setUser] = useState(null);
   const [isSignUpMode, setIsSignUpMode] = useState(false);
   const [showWelcome, setShowWelcome] = useState(true);
-  const [showAPITest, setShowAPITest] = useState(false);
   
   // Console log for app initialization
   useEffect(() => {
@@ -83,14 +81,6 @@ export default function App() {
   const handleLogin = async () => {
     console.log('🔐 Login attempt:', { email, password: password ? '***hidden***' : 'empty' });
     
-    // Demo credentials fallback
-    if (email === 'demo@solace.app' && password === 'demo123') {
-      Alert.alert('✅ Demo Login successful!', 'Welcome to SOLACE mobile! (Demo Mode)', [
-        { text: 'Continue', style: 'default' }
-      ]);
-      return;
-    }
-
     // Validation
     if (!email || !password) {
       Alert.alert('❌ Validation Error', 'Please enter both email and password.', [
@@ -309,18 +299,12 @@ export default function App() {
     return <WelcomeScreen onContinue={markWelcomeAsSeen} />;
   }
 
-  // Show API test screen if requested
-  if (showAPITest) {
-    return <APITestScreen onBack={() => setShowAPITest(false)} />;
-  }
-
   // If user is logged in, show HomeScreen
   if (user) {
     return (
       <HomeScreen 
         user={user} 
         onLogout={handleLogout}
-        onShowAPITest={() => setShowAPITest(true)}
       />
     );
   }

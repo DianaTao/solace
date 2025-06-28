@@ -100,8 +100,11 @@ export default function HomeScreen({ user, onLogout }) {
     }
   };
 
+  // TODO: Implement case notes feature
   const handleComingSoon = (feature) => {
-    alert(`🚧 Coming Soon!\n\nThe ${feature} feature is being developed. Stay tuned for updates!`);
+    console.log(`Feature "${feature}" is not yet implemented`);
+    // Temporarily disabled - feature needs implementation
+    // alert(`🚧 Coming Soon!\n\nThe ${feature} feature is being developed. Stay tuned for updates!`);
   };
 
   const handleNavigateTo = (page) => {
@@ -521,7 +524,8 @@ export default function HomeScreen({ user, onLogout }) {
                   </CardDescription>
                 </div>
                 <Button 
-                  className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 text-xs md:text-sm px-3 py-1 md:px-4 md:py-2 hover:scale-105"
+                  className="bg-gradient-to-r from-teal-600 to-cyan-600 hover:from-teal-700 hover:to-cyan-700 text-white shadow-lg hover:shadow-xl transition-all duration-300 text-xs md:text-sm px-3 py-1 md:px-4 md:py-2 hover:scale-105 opacity-50 cursor-not-allowed"
+                  disabled
                   onClick={() => handleComingSoon('Case Notes')}
                 >
                   View All

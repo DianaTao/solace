@@ -250,7 +250,8 @@ export default function LoginPage({ onLogin, onSwitchToSignup }) {
                     <button 
                       type="button"
                       className="text-sm text-emerald-600 hover:text-emerald-700 font-medium"
-                      onClick={() => alert("Password reset functionality coming soon!")}
+                      onClick={() => console.log("Password reset not yet implemented")}
+            disabled
                     >
                       Forgot password?
                     </button>

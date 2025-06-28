@@ -43,63 +43,12 @@ export default function ClientManagementScreen({ user, onBack }) {
     } catch (error) {
       console.error('❌ Failed to load clients:', error);
       
-      // Use mock data for demo
-      const mockClients = [
-        {
-          id: '1',
-          name: 'John Doe',
-          email: 'john.doe@email.com',
-          phone: '+1 (555) 123-4567',
-          address: '123 Main St, Anytown, ST 12345',
-          case_number: 'CASE-001-2024',
-          case_type: 'Housing Assistance',
-          status: 'active',
-          priority: 'high',
-          emergency_contact: 'Jane Doe - (555) 987-6543',
-          created_at: '2024-01-15T10:30:00Z',
-          notes_count: 8,
-          tasks_count: 3,
-          last_contact: '2024-01-18T16:20:00Z'
-        },
-        {
-          id: '2',
-          name: 'Alice Smith',
-          email: 'alice.smith@email.com',
-          phone: '+1 (555) 234-5678',
-          address: '456 Oak Ave, Springfield, ST 67890',
-          case_number: 'CASE-002-2024',
-          case_type: 'Employment Support',
-          status: 'active',
-          priority: 'medium',
-          emergency_contact: 'Bob Smith - (555) 876-5432',
-          created_at: '2024-01-10T09:15:00Z',
-          notes_count: 12,
-          tasks_count: 5,
-          last_contact: '2024-01-17T13:45:00Z'
-        },
-        {
-          id: '3',
-          name: 'Maria Rodriguez',
-          email: 'maria.rodriguez@email.com',
-          phone: '+1 (555) 345-6789',
-          address: '789 Pine St, Riverside, ST 34567',
-          case_number: 'CASE-003-2024',
-          case_type: 'Family Services',
-          status: 'pending',
-          priority: 'urgent',
-          emergency_contact: 'Carlos Rodriguez - (555) 765-4321',
-          created_at: '2024-01-12T14:20:00Z',
-          notes_count: 6,
-          tasks_count: 7,
-          last_contact: '2024-01-19T09:30:00Z'
-        }
-      ];
-      
-      setClients(mockClients);
+      // Set empty clients array on error
+      setClients([]);
       
       Alert.alert(
-        'Offline Mode',
-        'Unable to connect to server. Showing demo data.',
+        'Connection Error',
+        'Unable to connect to server. Please check your connection and try again.',
         [{ text: 'OK' }]
       );
     } finally {

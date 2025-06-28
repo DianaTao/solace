@@ -362,7 +362,8 @@ export default function SignupPage({ onSignup, onSwitchToLogin }) {
                     variant="outline"
                     className="w-full border-gray-200 hover:bg-gray-50 transition-all duration-200"
                     size="lg"
-                    onClick={() => alert('Google signup coming soon!')}
+                    onClick={() => console.log('Google signup not yet implemented')}
+                disabled
                   >
                     <svg className="mr-2 h-4 w-4" viewBox="0 0 24 24">
                       <path

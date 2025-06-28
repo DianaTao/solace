@@ -24,7 +24,7 @@ import VoiceNoteRecorder from '../components/VoiceNoteRecorder';
 
 const { width: screenWidth, height: screenHeight } = Dimensions.get('window');
 
-export default function HomeScreen({ user, onLogout, onShowAPITest }) {
+export default function HomeScreen({ user, onLogout }) {
   const [isLoading, setIsLoading] = useState(false);
   const [refreshing, setRefreshing] = useState(false);
   const [menuVisible, setMenuVisible] = useState(false);
@@ -125,21 +125,21 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
         setApiConnected(false);
         setDashboardData({
           stats: {
-            activeClients: mockClientsData.length,
-            pendingTasks: mockTasksData.length,
-            caseNotes: mockCaseNotesData.length,
-            reportsDue: mockReportsData.length
+            activeClients: 0,
+            pendingTasks: 0,
+            caseNotes: 0,
+            reportsDue: 0
           },
-          clients: mockClientsData,
-          tasks: mockTasksData,
-          caseNotes: mockCaseNotesData,
-          reports: mockReportsData
+          clients: [],
+          tasks: [],
+          caseNotes: [],
+          reports: []
         });
         
         // Show user-friendly error
         Alert.alert(
           'Connection Issue',
-          'Unable to connect to the backend. Using offline data.',
+          'Unable to connect to the backend. Please check your connection and try again.',
           [{ text: 'OK' }]
         );
       }
@@ -240,28 +240,7 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
     }
   };
 
-  // Mock data for fallback
-  const mockClientsData = [
-    { name: 'John Doe', case_number: 'Case #4209', created_at: '2d ago', id: 'mock1', status: 'active' },
-    { name: 'Alice Smith', case_number: 'Case #4183', created_at: '3d ago', id: 'mock2', status: 'active' }
-  ];
-
-  const mockTasksData = [
-    { title: 'Call John Doe about job placement', due_date: 'Due today at 2:00 PM', priority: 'high', id: 'task1' },
-    { title: 'Submit housing application', due_date: 'Due tomorrow at 9:00 AM', priority: 'medium', id: 'task2' }
-  ];
-
-  const mockCaseNotesData = [
-    { title: 'Alice Smith - Housing', created_at: 'Today', content: 'Completed housing application. Waiting for approval from county office.', id: 'note1' },
-    { title: 'John Doe - Employment', created_at: 'Yesterday', content: 'Attended job interview. Follow-up scheduled for next week.', id: 'note2' }
-  ];
-
-  const mockReportsData = [
-    { title: 'Monthly Case Summary', due_date: 'Due in 5 days', type: 'monthly', id: 'report1' },
-    { title: 'Quarterly Outcomes', due_date: 'Due in 2 weeks', type: 'quarterly', id: 'report2' }
-  ];
-
-  // Dynamic stats data based on real or mock data
+  // Dynamic stats data based on API connection status
   const statsData = [
     { 
       label: 'Active Clients', 
@@ -365,16 +344,6 @@ export default function HomeScreen({ user, onLogout, onShowAPITest }) {
           >
             <Ionicons name="bar-chart" size={20} color="#6b7280" />
             <Text style={styles.menuItemText}>Reports</Text>
-          </TouchableOpacity>
-          <TouchableOpacity 
-            style={styles.menuItem}
-            onPress={() => {
-              setMenuVisible(false);
-              onShowAPITest && onShowAPITest();
-            }}
-          >
-            <Ionicons name="server" size={20} color="#8b5cf6" />
-            <Text style={[styles.menuItemText, { color: '#8b5cf6' }]}>API Test</Text>
           </TouchableOpacity>
         </View>
 
